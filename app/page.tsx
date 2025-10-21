@@ -20,7 +20,7 @@ export default function Home() {
   const [analysis, setAnalysis] = useState<string>("");
   const [improvement, setImprovement] = useState<string>("");
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [freeLeft, setFreeLeft] = useState<number>(3);
+  const [freeLeft, setFreeLeft] = useState<number>(100);
 
   useEffect(() => {
     const h = localStorage.getItem("affect_history");
