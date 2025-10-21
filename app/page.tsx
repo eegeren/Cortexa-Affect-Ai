@@ -3,20 +3,46 @@ import { useEffect, useState } from "react";
 import EmotionBars from "@/components/EmotionBars";
 
 type Emotions = Record<string, number>;
-type HistoryItem = { t: string; em: Emotions; sum: string; ts: number };
+type HistoryItem = {
+  t: string;
+  em: Emotions;
+  summary?: string;
+  analysis: string;
+  improvement: string;
+  ts: number;
+};
 
 export default function Home() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [emotions, setEmotions] = useState<Emotions | null>(null);
   const [summary, setSummary] = useState<string>("");
+  const [analysis, setAnalysis] = useState<string>("");
+  const [improvement, setImprovement] = useState<string>("");
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [freeLeft, setFreeLeft] = useState<number>(3);
 
   useEffect(() => {
     const h = localStorage.getItem("affect_history");
     const f = localStorage.getItem("affect_free");
-    if (h) setHistory(JSON.parse(h));
+    if (h) {
+      try {
+        const parsed = JSON.parse(h) as HistoryItem[];
+        if (Array.isArray(parsed)) {
+          const normalized = parsed.map((item) => ({
+            t: item.t ?? "",
+            em: item.em ?? {},
+            summary: item.summary ?? (item as any).sum ?? "",
+            analysis: item.analysis ?? item.summary ?? (item as any).sum ?? "",
+            improvement: item.improvement ?? "",
+            ts: item.ts ?? Date.now(),
+          }));
+          setHistory(normalized.slice(0, 10));
+        }
+      } catch {
+        setHistory([]);
+      }
+    }
     if (f) setFreeLeft(Number(f));
   }, []);
   useEffect(() => {
@@ -34,6 +60,8 @@ export default function Home() {
     setLoading(true);
     setEmotions(null);
     setSummary("");
+    setAnalysis("");
+    setImprovement("");
     try {
       const res = await fetch("/api/analyze", {
         method: "POST",
@@ -44,7 +72,21 @@ export default function Home() {
       if (data.error) throw new Error(data.error);
       setEmotions(data.emotions || null);
       setSummary(data.summary || "");
-      setHistory([{ t: text, em: data.emotions || {}, sum: data.summary || "", ts: Date.now() }, ...history].slice(0, 10));
+      setAnalysis(data.analysis || "");
+      setImprovement(data.improvement || "");
+      setHistory(
+        [
+          {
+            t: text,
+            em: data.emotions || {},
+            summary: data.summary || "",
+            analysis: data.analysis || data.summary || "",
+            improvement: data.improvement || "",
+            ts: Date.now(),
+          },
+          ...history,
+        ].slice(0, 10)
+      );
       setFreeLeft(freeLeft - 1);
     } catch {
       alert("Analyze error.");
@@ -55,11 +97,15 @@ export default function Home() {
 
   const copyReport = async () => {
     if (!emotions) return;
+    const narrative: string[] = [];
+    if (analysis) narrative.push(analysis);
+    if (improvement) narrative.push(improvement);
+    if (!narrative.length && summary) narrative.push(summary);
     const lines = Object.entries(emotions)
       .sort((a,b)=>b[1]-a[1])
       .map(([k,v])=>`${k}: ${Math.round(v)}%`)
       .join("\n");
-    const txt = `Cortexa Affect AI Report\n\n${summary ? summary + "\n\n" : ""}${lines}`;
+    const txt = `Cortexa Affect AI Report\n\n${narrative.length ? narrative.join("\n\n") + "\n\n" : ""}${lines}`;
     await navigator.clipboard.writeText(txt);
   };
 
@@ -98,10 +144,12 @@ export default function Home() {
             )}
           </div>
 
-          {summary && (
-            <p className="mt-6 text-gray-800 text-base bg-blue-50 border border-blue-100 rounded-xl p-4">
-              <strong>Summary:</strong> {summary}
-            </p>
+          {(analysis || improvement || summary) && (
+            <div className="mt-6 text-gray-800 text-base bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-3">
+              {analysis && <p>{analysis}</p>}
+              {improvement && <p className="font-medium text-blue-900">{improvement}</p>}
+              {!analysis && !improvement && summary && <p>{summary}</p>}
+            </div>
           )}
 
           {emotions && <EmotionBars data={emotions} />}
@@ -124,9 +172,14 @@ export default function Home() {
                 <div key={i} className="bg-white border rounded-xl p-4 shadow-sm">
                   <div className="text-xs text-gray-500 mb-2">{new Date(h.ts).toLocaleString()}</div>
                   <div className="line-clamp-2 text-sm text-gray-700">{h.t}</div>
-                  <div className="mt-2 text-xs text-gray-600">
-                    <em>{h.sum}</em>
-                  </div>
+                  {(h.analysis || h.summary) && (
+                    <div className="mt-2 text-xs text-gray-600">
+                      <em>{h.analysis || h.summary}</em>
+                    </div>
+                  )}
+                  {h.improvement && (
+                    <div className="mt-1 text-xs text-blue-800">{h.improvement}</div>
+                  )}
                 </div>
               ))}
             </div>

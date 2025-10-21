@@ -30,6 +30,13 @@ function extractSummary(text: string): string {
   return text.split("\n").map(s => s.trim()).find(Boolean) ?? "Analysis summary unavailable.";
 }
 
+function extractTag(text: string, tag: string): string {
+  const re = new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`, "i");
+  const match = text.match(re);
+  if (match) return match[1].trim();
+  return text.trim();
+}
+
 export async function POST(req: Request) {
   try {
     const { text } = await req.json();
@@ -61,7 +68,29 @@ No extra text. No explanations.`;
     const emotions = safeParseEmotions(raw);
     const summary = extractSummary(raw);
 
-    return NextResponse.json({ emotions, summary });
+    const narrativeSystem = `You are an expert in advertising psychology and emotional resonance.
+When given ad copy, you must respond in the same language as the ad.
+Produce exactly two blocks wrapped in XML tags, nothing else:
+<analysis>Natural, conversational description of the emotional tone and how it feels. Avoid lists.</analysis>
+<improvement>If the emotional impact is weak, generic, or confusing, give one short actionable improvement.
+If the copy already works well, briefly reinforce the strongest element instead. Stay conversational.</improvement>`;
+
+    const narrativeUser = `Ad copy:\n"""${text}"""`;
+
+    const narrativeResp = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: narrativeSystem },
+        { role: "user", content: narrativeUser }
+      ],
+      temperature: 0.3,
+    });
+
+    const narrativeRaw = narrativeResp.choices[0]?.message?.content ?? "";
+    const analysis = extractTag(narrativeRaw, "analysis");
+    const improvement = extractTag(narrativeRaw, "improvement");
+
+    return NextResponse.json({ emotions, summary, analysis, improvement });
   } catch {
     return NextResponse.json({ error: "Analyze failed" }, { status: 500 });
   }
