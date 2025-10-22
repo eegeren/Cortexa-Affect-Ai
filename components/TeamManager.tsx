@@ -27,7 +27,7 @@ export default function TeamManager({ isEnabled }: Props) {
     setFetching(true);
     try {
       const res = await fetch("/api/team", { cache: "no-store" });
-      if (!res.ok) throw new Error("Takım üyeleri yüklenemedi.");
+      if (!res.ok) throw new Error("Team members could not be loaded.");
       const data = (await res.json()) as { members: TeamMember[] };
       setMembers(data.members ?? []);
     } catch (err) {
@@ -35,9 +35,9 @@ export default function TeamManager({ isEnabled }: Props) {
         console.error(err);
       }
       const message =
-        err instanceof Error ? err.message : "Takım üyeleri yüklenirken bir hata oluştu.";
+        err instanceof Error ? err.message : "An error occurred while loading team members.";
       if (message.includes("team_members")) {
-        setFeedback("team_members tablosu bulunamadı. Supabase şemanı güncelle.");
+        setFeedback("team_members table not found. Update your Supabase schema.");
       } else {
         setFeedback(message);
       }
@@ -63,13 +63,13 @@ export default function TeamManager({ isEnabled }: Props) {
       });
       if (!res.ok) {
         const { error } = await res.json();
-        throw new Error(error || "Üye eklenemedi.");
+        throw new Error(error || "Member could not be added.");
       }
       setEmail("");
       await fetchMembers();
     } catch (err) {
       setFeedback(
-        err instanceof Error ? err.message : "Üye ekleme sırasında hata oluştu."
+        err instanceof Error ? err.message : "An error occurred while adding the member."
       );
     } finally {
       setLoading(false);
@@ -87,12 +87,12 @@ export default function TeamManager({ isEnabled }: Props) {
       });
       if (!res.ok) {
         const { error } = await res.json();
-        throw new Error(error || "Üye silinemedi.");
+        throw new Error(error || "Member could not be removed.");
       }
       await fetchMembers();
     } catch (err) {
       setFeedback(
-        err instanceof Error ? err.message : "Üye silme sırasında hata oluştu."
+        err instanceof Error ? err.message : "An error occurred while removing the member."
       );
     } finally {
       setLoading(false);
@@ -102,7 +102,7 @@ export default function TeamManager({ isEnabled }: Props) {
   if (!isEnabled) {
     return (
       <p className="mt-4 rounded-xl border border-blue-100 bg-blue-50/70 p-3 text-xs text-blue-600">
-        Takım üyeleri özelliği için giriş yapman gerekli.
+        You need to sign in to manage teammates.
       </p>
     );
   }
@@ -123,7 +123,7 @@ export default function TeamManager({ isEnabled }: Props) {
           disabled={loading}
           className="rounded-xl border border-blue-600 bg-blue-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-blue-700 disabled:translate-y-0 disabled:border-blue-300 disabled:bg-blue-300"
         >
-          {loading ? "Ekleniyor..." : "Üye ekle"}
+          {loading ? "Adding..." : "Add member"}
         </button>
       </form>
 
@@ -135,10 +135,10 @@ export default function TeamManager({ isEnabled }: Props) {
 
       <div className="space-y-2">
         {fetching ? (
-          <p className="text-xs text-slate-500">Üyeler yükleniyor...</p>
+          <p className="text-xs text-slate-500">Loading members...</p>
         ) : members.length === 0 ? (
           <p className="text-xs text-slate-500">
-            Henüz eklenmiş üye yok. Mail adresi girerek davet et.
+            No teammates yet. Invite someone by entering their email.
           </p>
         ) : (
           members.map((member) => (
@@ -151,7 +151,7 @@ export default function TeamManager({ isEnabled }: Props) {
                 onClick={() => handleRemove(member.id)}
                 className="text-xs font-semibold uppercase tracking-[0.28em] text-blue-500 hover:text-blue-700"
               >
-                Sil
+                Remove
               </button>
             </div>
           ))

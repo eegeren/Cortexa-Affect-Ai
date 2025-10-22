@@ -46,7 +46,7 @@ export default function LoginPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Giriş sırasında beklenmedik bir hata oluştu."
+          : "An unexpected error occurred during sign in."
       );
     } finally {
       setLoading(false);
@@ -70,7 +70,7 @@ export default function LoginPage() {
       if (supabaseError) {
         setError(supabaseError.message);
       } else {
-        setStatus("Magic link gönderildi. Gelen kutunu kontrol et!");
+        setStatus("Send magic linkildi. Gelen kutunu kontrol et!");
       }
     } finally {
       setMagicLoading(false);
@@ -98,7 +98,7 @@ export default function LoginPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Google ile giriş sırasında bir hata oluştu."
+          : "An error occurred while attempting Google sign-in."
       );
     }
   };
@@ -114,26 +114,24 @@ export default function LoginPage() {
             ← Ana sayfa
           </Link>
           <div className="mt-8 space-y-4">
-            <h1 className="text-3xl font-bold text-white">Cortexa’ya giriş</h1>
+            <h1 className="text-3xl font-bold text-white">Sign in to Cortexa</h1>
             <p className="text-sm text-slate-400">
-              Koyu modda odaklan; ister klasik şifreyle ister magic link ile saniyeler
-              içinde hesabına dön. Google ile tek tık oturum da burada.
+              Stay focused in dark mode—sign in with password, magic link, or Google in seconds.
             </p>
           </div>
           <div className="mt-10 space-y-4 rounded-2xl border border-white/10 bg-[#0c1018] p-4 text-sm text-slate-300">
             <div>
               <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                Giriş ipuçları
+                Sign-in tips
               </h2>
               <p className="mt-2 text-xs text-slate-400">
-                Premium hesabın varsa, giriş yaptıktan sonra sol panelden sınırsız analiz ve
-                ekip özelliklerini kullanabilirsin.
+                If you're premium, the sidebar unlocks unlimited analyses and team features after sign-in.
               </p>
             </div>
             <div className="rounded-xl border border-blue-500/40 bg-blue-500/10 px-3 py-3 text-xs text-blue-200">
-              <p className="font-semibold">Parolayı mı unuttun?</p>
+              <p className="font-semibold">Forgot your password?</p>
               <p className="mt-1">
-                Magic link gönder; e-postandaki tek tıklamayla anında oturum açılır.
+                Send a magic link and log in instantly from your inbox.
               </p>
             </div>
           </div>
@@ -154,7 +152,7 @@ export default function LoginPage() {
                 setError(null);
               }}
             >
-              Şifre
+              Password
             </button>
             <button
               type="button"
@@ -181,7 +179,7 @@ export default function LoginPage() {
                     htmlFor="email"
                     className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
                   >
-                    E-posta adresi
+                    Email address
                   </label>
                   <input
                     id="email"
@@ -198,7 +196,7 @@ export default function LoginPage() {
                     htmlFor="password"
                     className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
                   >
-                    Şifre
+                    Password
                   </label>
                   <input
                     id="password"
@@ -206,7 +204,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     required
-                    placeholder="Şifreni gir"
+                    placeholder="Passwordni gir"
                     className="mt-2 w-full rounded-2xl border border-white/10 bg-[#0b0e13] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                   />
                 </div>
@@ -215,7 +213,7 @@ export default function LoginPage() {
                   disabled={loading}
                   className="w-full rounded-2xl border border-blue-500 bg-blue-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:border-slate-500 disabled:bg-slate-600"
                 >
-                  {loading ? "Giriş yapılıyor..." : "Giriş yap"}
+                  {loading ? "Signing in..." : "Sign in"}
                 </button>
               </form>
             ) : (
@@ -225,7 +223,7 @@ export default function LoginPage() {
                     htmlFor="magic-email"
                     className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
                   >
-                    E-posta adresi
+                    Email address
                   </label>
                   <input
                     id="magic-email"
@@ -242,7 +240,7 @@ export default function LoginPage() {
                   disabled={magicLoading}
                   className="w-full rounded-2xl border border-blue-500 bg-blue-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:border-slate-500 disabled:bg-slate-600"
                 >
-                  {magicLoading ? "Magic link gönderiliyor..." : "Magic link gönder"}
+                  {magicLoading ? "Send magic linkiliyor..." : "Send magic link"}
                 </button>
               </form>
             )}
@@ -259,16 +257,16 @@ export default function LoginPage() {
               disabled={oauthLoading}
               className="mt-4 w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10 disabled:opacity-50"
             >
-              {oauthLoading ? "Google yönlendiriliyor..." : "Google ile devam et"}
+              {oauthLoading ? "Redirecting to Google..." : "Continue with Google"}
             </button>
 
             <p className="mt-6 text-center text-xs text-slate-500">
-              Hesabın yok mu?{" "}
+              Don't have an account?{" "}
               <Link
                 href="/sign-up"
                 className="font-semibold text-blue-400 underline underline-offset-4 hover:text-blue-300"
               >
-                Hemen kayıt ol.
+                Create an account.
               </Link>
             </p>
 

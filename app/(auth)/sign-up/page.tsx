@@ -21,7 +21,7 @@ export default function SignUpPage() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!accepted) {
-      setError("Devam etmek için kullanım koşullarını kabul etmelisin.");
+      setError("You must accept the terms before continuing.");
       return;
     }
     setLoading(true);
@@ -57,10 +57,10 @@ export default function SignUpPage() {
         setError(signUpError.message);
       } else if (!data.session) {
         setMessage(
-          "Hesabın oluşturuldu! Lütfen e-posta kutundan gönderdiğimiz doğrulama bağlantısını onayla."
+          "Account created! Check your inbox to confirm your email."
         );
       } else {
-        setMessage("Hoş geldin! Şimdi otomatik olarak giriş yapıldı.");
+        setMessage("Welcome! You're now signed in automatically.");
         router.push("/");
       }
 
@@ -70,12 +70,12 @@ export default function SignUpPage() {
     } catch (err) {
       console.error(err);
       if (err instanceof Error && err.message === "timeout") {
-        setError("İstek zaman aşımına uğradı. Lütfen bağlantını kontrol edip tekrar dene.");
+        setError("Request timed out. Check your connection and try again.");
       } else {
         setError(
           err instanceof Error
             ? err.message
-            : "Kayıt sırasında beklenmedik bir hata oluştu."
+            : "An unexpected error occurred during sign up."
         );
       }
     } finally {
@@ -93,7 +93,7 @@ export default function SignUpPage() {
       });
       if (error) setError(error.message);
     } catch (err: any) {
-      setError(err?.message || "Google girişi sırasında hata oluştu.");
+      setError(err?.message || "Something went wrong with Google sign in.");
     } finally {
       setLoading(false);
     }
@@ -111,33 +111,33 @@ export default function SignUpPage() {
           </Link>
           <div className="mt-8 space-y-4">
             <h1 className="text-3xl font-bold text-white">
-              Cortexa hesabını oluştur
+              Create your Cortexa account
             </h1>
             <p className="text-sm text-slate-400">
-              Karanlık modda odaklan; üç adımla kayıt ol, reklam metinlerini içgörüye çevir.
+              Stay focused in dark mode; sign up in three steps and turn copy into insight.
             </p>
           </div>
           <div className="mt-10 space-y-4 rounded-2xl border border-white/10 bg-[#0c1018] p-4 text-sm text-slate-300">
             <div>
               <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                Neler kazanırsın?
+                What you get
               </h2>
               <ul className="mt-3 space-y-2 text-xs text-slate-400">
-                <li>✔ Sınırsız duygu analizi ve rapor saklama (Premium)</li>
-                <li>✔ Ekip erişimi ve paylaşılabilir raporlar</li>
-                <li>✔ İkna puanı takibi ve otomatik tavsiyeler</li>
+                <li>✔ Unlimited emotion analysis and saved reports (Premium)</li>
+                <li>✔ Team access and shareable reports</li>
+                <li>✔ Persuasion scoring and automated guidance</li>
               </ul>
             </div>
             <div className="rounded-xl border border-blue-500/40 bg-blue-500/10 px-3 py-3 text-xs text-blue-200">
-              <p className="font-semibold">Zaten hesabın var mı?</p>
+              <p className="font-semibold">Already have an account?</p>
               <p className="mt-1">
                 <Link
                   href="/login"
                   className="font-semibold text-blue-100 underline underline-offset-4"
                 >
-                  Buradan giriş yap.
+                  Sign in here.
                 </Link>{" "}
-                Magic link ile saniyeler içinde oturum açabilirsin.
+                Magic links sign you in within seconds.
               </p>
             </div>
           </div>
@@ -151,14 +151,14 @@ export default function SignUpPage() {
                   htmlFor="name"
                   className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
                 >
-                  Adın
+                  Name
                 </label>
                 <input
                   id="name"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   required
-                  placeholder="Örn. Elif"
+                  placeholder="e.g. Elif"
                   className="mt-2 w-full rounded-2xl border border-white/10 bg-[#0b0e13] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                 />
               </div>
@@ -167,7 +167,7 @@ export default function SignUpPage() {
                   htmlFor="company"
                   className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
                 >
-                  Marka / Şirket
+                  Brand / Company
                 </label>
                 <input
                   id="company"
@@ -184,7 +184,7 @@ export default function SignUpPage() {
                 htmlFor="email"
                 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
               >
-                İş e-postası
+                Work email
               </label>
               <input
                 id="email"
@@ -202,7 +202,7 @@ export default function SignUpPage() {
                 htmlFor="password"
                 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500"
               >
-                Şifre
+                Password
               </label>
               <div className="mt-2 flex items-center gap-2 rounded-2xl border border-white/10 bg-[#0b0e13] px-2">
                 <input
@@ -211,7 +211,7 @@ export default function SignUpPage() {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   required
-                  placeholder="Min. 8 karakter"
+                  placeholder="Min. 8 characters"
                   className="w-full bg-transparent px-2 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
                 />
                 <button
@@ -219,7 +219,7 @@ export default function SignUpPage() {
                   onClick={() => setShowPassword((prev) => !prev)}
                   className="rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-blue-300 transition hover:text-blue-100"
                 >
-                  {showPassword ? "Gizle" : "Göster"}
+                  {showPassword ? "Hide" : "Show"}
                 </button>
               </div>
             </div>
@@ -232,8 +232,8 @@ export default function SignUpPage() {
                 className="mt-1 h-4 w-4 rounded border-white/20 bg-transparent text-blue-500 focus:ring-blue-500/40"
               />
               <span>
-                <strong className="text-blue-300">Hizmet Koşulları</strong> ve{" "}
-                <strong className="text-blue-300">Gizlilik Politikası</strong>’nı okudum
+                <strong className="text-blue-300">Terms of Service</strong> ve{" "}
+                <strong className="text-blue-300">Privacy Policy</strong> read and accepted
                 ve kabul ediyorum.
               </span>
             </label>
@@ -243,7 +243,7 @@ export default function SignUpPage() {
               disabled={loading}
               className="w-full rounded-2xl border border-blue-500 bg-blue-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:border-slate-500 disabled:bg-slate-600"
             >
-              {loading ? "Hesap oluşturuluyor..." : "Hesap oluştur"}
+              {loading ? "Creating account..." : "Create account"}
             </button>
 
             <button
@@ -252,7 +252,7 @@ export default function SignUpPage() {
               disabled={loading}
               className="w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-slate-200 transition hover:bg-white/10 disabled:opacity-50"
             >
-              Google ile devam et
+              Continue with Google
             </button>
 
             {message && (

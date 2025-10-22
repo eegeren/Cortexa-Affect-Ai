@@ -10,7 +10,7 @@ export default function AuthCallback() {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
-    // session tarayıcıda otomatik set edilir; kısa bir beklemenin ardından ana sayfaya geç
+    // session is set automatically in the browser; redirect back home shortly
     const t = setTimeout(() => router.replace("/"), 600);
     return () => clearTimeout(t);
   }, [router]);

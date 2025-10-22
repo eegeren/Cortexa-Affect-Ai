@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     const { email } = (await request.json()) as { email?: string };
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
-        { error: "Geçerli bir e-posta adresi gir." },
+        { error: "Enter a valid email address." },
         { status: 400 }
       );
     }
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
         error:
           err instanceof Error
             ? err.message
-            : "Üye ekleme sırasında beklenmedik bir hata oluştu.",
+            : "Unexpected error while adding teammate.",
       },
       { status: 500 }
     );
@@ -98,7 +98,7 @@ export async function DELETE(request: Request) {
     const { id } = (await request.json()) as { id?: string };
     if (!id) {
       return NextResponse.json(
-        { error: "Silinecek üye bulunamadı." },
+        { error: "Member to delete was not found." },
         { status: 400 }
       );
     }
@@ -120,7 +120,7 @@ export async function DELETE(request: Request) {
         error:
           err instanceof Error
             ? err.message
-            : "Üye silme sırasında beklenmedik bir hata oluştu.",
+            : "Unexpected error while removing teammate.",
       },
       { status: 500 }
     );

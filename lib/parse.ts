@@ -1,10 +1,10 @@
 export type Emotions = Record<string, number>;
 
 export function safeParseEmotions(text: string): Emotions {
-  // Önce code block içindeki JSON'u ayıkla
+  // Extract JSON from code blocks first
   const codeMatch = text.match(/```json([\s\S]*?)```/i) || text.match(/```([\s\S]*?)```/);
   const candidate = codeMatch ? codeMatch[1] : text;
-  // Yüzde işaretlerini temizle, tek tırnakları düzelt
+  // Remove percent signs and normalise quotes
   const cleaned = candidate
     .replace(/%/g, "")
     .replace(/(\w+)\s*:/g, (_, k) => `"${k.toLowerCase()}":`)
@@ -16,7 +16,7 @@ export function safeParseEmotions(text: string): Emotions {
       const n = typeof v === "string" ? parseFloat(v) : v;
       if (!isNaN(Number(n))) out[k] = Math.max(0, Math.min(100, Number(n)));
     }
-    // En az bir değer yoksa fallback
+    // Fallback if parsing fails
     if (Object.keys(out).length) return out;
   } catch {}
   // Basit fallback: metinden anahtar kelime yakala

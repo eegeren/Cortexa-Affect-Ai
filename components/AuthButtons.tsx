@@ -67,7 +67,7 @@ export default function AuthButtons() {
         href="/login"
         className="rounded-full border border-blue-300 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-blue-600 shadow-sm transition hover:border-blue-400 hover:text-blue-700"
       >
-        Giriş yap
+        Sign in
       </Link>
     );
   }
@@ -81,7 +81,7 @@ export default function AuthButtons() {
         onClick={handleSignOut}
         className="rounded-full border border-blue-300 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.28em] text-blue-600 transition hover:border-blue-400 hover:text-blue-700"
       >
-        Çıkış
+        Sign out
       </button>
     </div>
   );

@@ -90,7 +90,7 @@ export async function POST(req: Request) {
     const system = `You are an ad emotion rater.
 Return STRICTLY in this format:
 <json>{"joy":75,"trust":62,"anticipation":40,"fear":10}</json>
-<summary>A short, plain-English one-sentence summary (max 20 words).</summary>
+<summary>Return a one-sentence summary (max 20 words) in the same language as the ad copy.</summary>
 No extra text. No explanations.`;
 
     const userPrompt = `Ad copy:\n"""${trimmedText}"""\nReturn the required tags exactly.`;
@@ -109,7 +109,7 @@ No extra text. No explanations.`;
     const summary = extractSummary(raw);
 
     const narrativeSystem = `You are an expert in advertising psychology and emotional resonance.
-When given ad copy, you must respond in the same language as the ad.
+When given ad copy, always respond in the same language as the ad.
 Produce exactly two blocks wrapped in XML tags, nothing else:
 <analysis>Natural, conversational description of the emotional tone and how it feels. Avoid lists.</analysis>
 <improvement>If the emotional impact is weak, generic, or confusing, give one short actionable improvement.

@@ -11,12 +11,12 @@ interface MeResponse {
 
 const SUB_STATUS_LABELS: Record<string, string> = {
   active: "Aktif Premium",
-  trialing: "Deneme sürecinde",
+  trialing: "Trialing",
   premium: "Premium",
   pro: "Pro",
 };
 
-export default function ProfilePage() {
+export default function ProfileePage() {
   const [data, setData] = useState<MeResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -39,30 +39,30 @@ export default function ProfilePage() {
 
   const statusKey = data?.subscription?.status?.toLowerCase() ?? "free";
   const statusLabel =
-    SUB_STATUS_LABELS[statusKey] ?? (statusKey === "free" ? "Ücretsiz plan" : statusKey);
+    SUB_STATUS_LABELS[statusKey] ?? (statusKey === "free" ? "Free plan" : statusKey);
 
   return (
     <main className="min-h-screen bg-[#0d1016] px-4 py-12 text-slate-100 sm:px-8">
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-8">
         <header className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/40">
-          <h1 className="text-3xl font-bold text-white">Profil</h1>
+          <h1 className="text-3xl font-bold text-white">Profile</h1>
           <p className="mt-2 text-sm text-slate-400">
-            Hesap bilgilerin, kullanım istatistiklerin ve plan tercihlerin bu ekranda.
+            Your account information, usage stats, and plan settings live here.
           </p>
         </header>
 
         <section className="grid gap-4 md:grid-cols-2">
           <article className="rounded-3xl border border-white/10 bg-[#11141c] p-5 shadow">
             <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-              Hesap bilgisi
+              Account info
             </h2>
             <div className="mt-4 space-y-2 text-sm text-slate-200">
               <p>
-                <span className="text-slate-400">Ad soyad:</span>{" "}
-                {data?.user?.name ?? "Tanımsız"}
+                <span className="text-slate-400">Name:</span>{" "}
+                {data?.user?.name ?? "Unavailable"}
               </p>
               <p>
-                <span className="text-slate-400">E-posta:</span>{" "}
+                <span className="text-slate-400">Email:</span>{" "}
                 {data?.user?.email ?? "—"}
               </p>
             </div>
@@ -70,27 +70,27 @@ export default function ProfilePage() {
 
           <article className="rounded-3xl border border-white/10 bg-[#11141c] p-5 shadow">
             <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-              Plan durumu
+              Plan status
             </h2>
             <div className="mt-4 space-y-3 text-sm text-slate-200">
               <p className="text-xl font-semibold text-white">{statusLabel}</p>
               <p className="text-xs text-slate-400">
                 {statusKey === "free"
-                  ? "Günde 3 analiz hakkın bulunuyor. Sınırsız analiz için Premium’a geçebilirsin."
-                  : "Premium avantajların aktif. Sınırsız analiz yapabilir ve ekip özelliklerini kullanabilirsin."}
+                  ? "You can run up to 3 analyses a day. Upgrade to premium for unlimited runs."
+                  : "Premium benefits are active. Enjoy unlimited analyses and team features."}
               </p>
               <div className="flex gap-2">
                 <Link
                   href="/upgrade"
                   className="inline-flex items-center rounded-xl border border-blue-500/40 bg-blue-500/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-blue-100 transition hover:bg-blue-500/30"
                 >
-                  Planlar
+                  Plans
                 </Link>
                 <Link
                   href="/api/auth/logout?redirect=/"
                   className="inline-flex items-center rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-200 transition hover:bg-white/10"
                 >
-                  Çıkış yap
+                  Sign out
                 </Link>
               </div>
             </div>
@@ -99,25 +99,25 @@ export default function ProfilePage() {
 
         <section className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow">
           <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-            Kullanım istatistikleri
+            Usage insights
           </h2>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-100">
-              <p className="text-xs uppercase tracking-[0.3em] text-blue-200/80">Son 24 saat</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-blue-200/80">Last 24h</p>
               <p className="mt-2 text-2xl font-semibold text-white">{data?.usage ?? 0}</p>
-              <p className="text-xs text-blue-200/70">Analiz tamamlandı</p>
+              <p className="text-xs text-blue-200/70">Analyses completed</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Plan seviyesi</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Plan tier</p>
               <p className="mt-2 text-xl font-semibold text-white">
-                {statusKey === "free" ? "Ücretsiz" : "Premium"}
+                {statusKey === "free" ? "Free" : "Premium"}
               </p>
               <p className="text-xs text-slate-400">Limit durumunu buradan takip edebilirsin.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Hızlı eylem</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Quick actions</p>
               <p className="mt-2 text-xs text-slate-300">
-                Eğer Premium’san sınırsız analiz yapabilirsin; değilsen yükseltmeyi değerlendirebilirsin.
+                Premium unlocks unlimited runs; upgrade if you want to go beyond the free quota.
               </p>
             </div>
           </div>

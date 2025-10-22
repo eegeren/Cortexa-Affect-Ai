@@ -19,9 +19,9 @@ type HistoryItem = {
 const DAILY_FREE = 3;
 
 const NAV_LINKS = [
-  { label: "Anasayfa", href: "#overview" },
-  { label: "Analiz geçmişi", href: "#recent" },
-  { label: "Profil", href: "/profile" },
+  { label: "Dashboard", href: "#overview" },
+  { label: "History", href: "#recent" },
+  { label: "Profile", href: "/profile" },
   { label: "Premium plan", href: "/upgrade" },
 ];
 
@@ -164,7 +164,7 @@ export default function Home() {
   };
 
   const displayName = userName ?? "Misafir";
-  const displayEmail = userEmail ?? "Giriş yapmadın";
+  const displayEmail = userEmail ?? "Not signed in";
   const [isPremium, setIsPremium] = useState(false);
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const router = useRouter();
@@ -189,7 +189,7 @@ export default function Home() {
     return source.slice(0, 2).toUpperCase();
   }, [userName, userEmail]);
 
-  const remainingLabel = isPremium ? "Sınırsız analiz" : `Ücretsiz kalan: ${freeLeft}`;
+  const remainingLabel = isPremium ? "Unlimited analyses" : `Free remaining: ${freeLeft}`;
 
   const handleSidebarSignOut = async () => {
     try {
@@ -262,7 +262,7 @@ export default function Home() {
 
         <div className="space-y-3 rounded-2xl border border-white/10 bg-[#0c1018] px-4 py-4 text-sm text-slate-300">
           <p>
-            Ücretsiz kalan:{" "}
+            Free remaining:{" "}
             <span className="font-semibold text-white">{isPremium ? "∞" : freeLeft}</span>
           </p>
           {!userEmail && (
@@ -271,13 +271,13 @@ export default function Home() {
                 href="/login"
                 className="block rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center text-xs font-semibold uppercase tracking-[0.3em] text-slate-200 transition hover:bg-white/10"
               >
-                Giriş yap
+                Sign in
               </Link>
               <Link
                 href="/sign-up"
                 className="block rounded-xl border border-blue-500 bg-blue-600 px-3 py-2 text-center text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-blue-500"
               >
-                Kayıt ol
+                Sign up
               </Link>
             </div>
           )}
@@ -285,14 +285,14 @@ export default function Home() {
             href="/upgrade"
             className="inline-flex w-full items-center justify-center rounded-xl bg-white text-xs font-semibold uppercase tracking-[0.3em] text-black transition hover:bg-slate-200"
           >
-            Premiuma geç
+            Upgrade to Premium
           </Link>
           {userEmail && (
             <button
               onClick={handleSidebarSignOut}
               className="inline-flex w-full items-center justify-center rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-200 transition hover:bg-white/10"
             >
-              Çıkış yap
+              Sign out
             </button>
           )}
         </div>
@@ -302,38 +302,38 @@ export default function Home() {
         <div className="mx-auto w-full max-w-4xl px-6 py-10">
           <header id="overview" className="mb-8 space-y-3">
             <h1 className="text-4xl font-bold text-white">
-              Reklam metninin duygusal etkisini analiz et
+              Analyze the emotional impact of your ad copy
             </h1>
             <p className="text-sm text-slate-400">
-              Metnini yapıştır, tek tıkla duygu dağılımını, özet ve ikna önerisini al.
+              Paste your copy and instantly see the emotional breakdown, summary, and persuasion tips.
             </p>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{remainingLabel}</p>
           </header>
 
           <section className="grid gap-8 md:grid-cols-2 xl:grid-cols-4 mb-6">
             <article className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-100 shadow">
-              <p className="text-xs uppercase tracking-[0.3em] text-blue-200/80">En baskın duygu</p>
-              <p className="mt-2 text-2xl font-semibold text-white">{(dominantEmotion ?? "Bekleniyor").toString()}</p>
-              <p className="text-xs text-blue-200/70">{dominantValue ? `${Math.round(dominantValue)}% yoğunluk` : "Analiz sonrası gösterilecek"}</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-blue-200/80">Primary emotion</p>
+              <p className="mt-2 text-2xl font-semibold text-white">{(dominantEmotion ?? "Pending").toString()}</p>
+              <p className="text-xs text-blue-200/70">{dominantValue ? `${Math.round(dominantValue)}% intensity` : "Shown after analysis"}</p>
             </article>
             <article className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">İkincil duygu</p>
-              <p className="mt-2 text-2xl font-semibold text-white">{(secondEmotion ?? "Bekleniyor").toString()}</p>
-              <p className="text-xs text-slate-400">{secondValue ? `${Math.round(secondValue)}% eşlik ediyor` : "Analiz sonrası gösterilecek"}</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Secondary emotion</p>
+              <p className="mt-2 text-2xl font-semibold text-white">{(secondEmotion ?? "Pending").toString()}</p>
+              <p className="text-xs text-slate-400">{secondValue ? `${Math.round(secondValue)}% accompanies` : "Shown after analysis"}</p>
             </article>
             <article className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Analiz hakkı</p>
-              <p className="mt-2 text-2xl font-semibold text-white">{isPremium ? "Sınırsız" : freeLeft}</p>
-              <p className="text-xs text-slate-400">{isPremium ? "Premium hesabın sayesinde limit yok" : "Günlük ücretsiz hak"}</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Daily quota</p>
+              <p className="mt-2 text-2xl font-semibold text-white">{isPremium ? "Unlimited" : freeLeft}</p>
+              <p className="text-xs text-slate-400">{isPremium ? "Your premium subscription removes the limit" : "Daily free runs"}</p>
             </article>
             <article className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 md:col-span-2 lg:col-span-1">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Hızlı aksiyon</p>
-              <p className="mt-2 text-xs text-slate-300">Metnini güçlendirmek için Premium planımızdaki ikna önerilerini dene.</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Quick action</p>
+              <p className="mt-2 text-xs text-slate-300">Boost your copy with persuasion tips from the Premium plan.</p>
               <Link
                 href="/upgrade"
                 className="mt-3 inline-flex w-full items-center justify-center rounded-xl bg-blue-500 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-blue-600"
               >
-                Planları gör
+                View plans
               </Link>
             </article>
           </section>
@@ -347,7 +347,7 @@ export default function Home() {
                 <textarea
                   value={text}
                   onChange={(event) => setText(event.target.value)}
-                  placeholder="Örnek: Yeni finans uygulamamızla bütçeni üç dokunuşla yönet..."
+                  placeholder="Example: Manage your budget in three taps with our new finance app..."
                   className="h-48 w-full rounded-xl border border-white/10 bg-[#080c12] p-4 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                 />
               </div>
@@ -383,16 +383,16 @@ export default function Home() {
 
             <aside className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30 space-y-4 text-sm text-slate-300">
               <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                Yazım ipuçları
+                Writing tips
               </h2>
               <p>
-                1. Metnin hedef kitlesinin duygusunu tetikleyen bir açılış cümlesi kullan. <br />
-                2. Benzersiz faydayı net bir cümlede anlat. <br />
-                3. Güven veren bir sosyal kanıt veya veri ekle. <br />
-                4. Net bir çağrı ve zamanlama sun.
+                1. Use an opening sentence that taps into your audience's emotions. <br />
+                2. State the unique benefit in one clear sentence. <br />
+                3. Add trust-building proof or data. <br />
+                4. Offer a clear call to action and timing.
               </p>
               <div className="rounded-2xl border border-white/10 bg-[#0b0f16] px-4 py-3 text-xs text-slate-400">
-                "+" işaretiyle farklı duygulara yönelik varyasyonlarını da dene; Premium plan bunları kaydedip karşılaştırmana yardımcı olur.
+                Try variants for different emotions using the '+' prompt; Premium stores and compares them for you.
               </div>
             </aside>
           </section>
@@ -400,7 +400,7 @@ export default function Home() {
           <section className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30 mt-10">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-4">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">Doğal dile geri bildirim</h2>
+                <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">Narrative feedback</h2>
                 {(analysis || improvement || summary) ? (
                   <div className="space-y-3 text-sm text-slate-200">
                     {analysis && <p>{analysis}</p>}
@@ -411,18 +411,18 @@ export default function Home() {
                   </div>
                 ) : (
                   <p className="text-xs text-slate-500">
-                    Analiz tamamlandığında özet ve ikna önerisini burada göreceksin.
+                    Once the analysis completes you'll see the summary and persuasion tip here.
                   </p>
                 )}
               </div>
               <div className="space-y-4">
-                <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">Duygu dağılımı</h2>
+                <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">Emotion mix</h2>
                 {emotions ? (
                   <div className="rounded-2xl border border-white/10 bg-[#0c1018] p-4">
                     <EmotionBars data={emotions} />
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500">Grafik, analiz tamamlandıktan sonra gösterilir.</p>
+                  <p className="text-xs text-slate-500">The chart appears after an analysis is completed.</p>
                 )}
                 {emotions && (
                   <details className="text-xs text-slate-500">
@@ -440,10 +440,10 @@ export default function Home() {
             <section id="recent" className="mt-10 space-y-4">
               <header>
                 <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
-                  Geçmiş
+                  History
                 </p>
                 <h2 className="text-xl font-semibold text-white">
-                  Son analizler
+                  Recent analyses
                 </h2>
               </header>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

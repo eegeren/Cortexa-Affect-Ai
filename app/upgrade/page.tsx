@@ -7,31 +7,31 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 const plans = [
   {
     name: "Starter",
-    price: "Ücretsiz",
-    description: "Günde 3 hızlı analiz, e-posta çıktısı ve temel raporlama.",
+    price: "Free",
+    description: "Up to 3 daily analyses with basic exports.",
     features: [
-      "Günde 3 metin analizi",
-      "PDF / metin çıktısı kopyalama",
-      "Son 10 analizin kaydı",
+      "Up to 3 text analyses per day",
+      "Copy results to clipboard",
+      "Stores the last 10 results",
     ],
     cta: {
-      label: "Mevcut plan",
+      label: "Current plan",
       disabled: true,
     },
   },
   {
     name: "Premium",
     price: "₺399/ay",
-    description: "Sınırsız analiz, ekip paylaşımı ve derin içgörü raporları.",
+    description: "Unlimited runs, team sharing, and deep insight reports.",
     features: [
-      "Sınırsız metin analizi ve rapor saklama",
-      "Takım üyeleri ekleme & paylaşılan raporlar",
-      "PDF & CSV dışa aktarma",
-      "A/B test içgörüleri ve ikna puanı takibi",
-      "Öncelikli destek kuyruğu",
+      "Unlimited analyses and saved reports",
+      "Invite teammates, share reports",
+      "PDF & CSV exports",
+      "A/B insight and persuasion scoring",
+      "Priority support queue",
     ],
     cta: {
-      label: "Stripe ile güvenli ödeme yap",
+      label: "Checkout with Stripe securely",
       disabled: false,
     },
   },
@@ -50,7 +50,7 @@ export default function UpgradePage() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        setMessage("Ödeme yapmadan önce lütfen giriş yap.");
+        setMessage("Please sign in before starting the checkout.");
         return;
       }
 
@@ -61,20 +61,20 @@ export default function UpgradePage() {
 
       if (!res.ok) {
         const errorText = await res.text();
-        throw new Error(errorText || "Checkout bağlantısı oluşturulamadı.");
+        throw new Error(errorText || "Unable to create checkout session.");
       }
 
       const payload = (await res.json()) as { url: string };
       if (payload?.url) {
         window.location.href = payload.url;
       } else {
-        throw new Error("Geçerli bir yönlendirme bulunamadı.");
+        throw new Error("Redirect target missing.");
       }
     } catch (err) {
       setMessage(
         err instanceof Error
           ? err.message
-          : "Checkout bağlantısını oluştururken bir hata oluştu."
+          : "Something went wrong while creating the checkout session."
       );
     } finally {
       setLoading(false);
@@ -89,32 +89,32 @@ export default function UpgradePage() {
             href="/"
             className="self-center rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-300 transition hover:bg-white/10"
           >
-            ← Ana sayfaya dön
+            ← Back to dashboard
           </Link>
           <h1 className="text-4xl font-black text-white sm:text-5xl">
-            Premium’a yükselt ve sınırları kaldır
+            Upgrade to Premium to remove limits
           </h1>
           <p className="mx-auto max-w-2xl text-sm text-slate-300 sm:text-base">
-            Reklam metinlerinin duygusal yankısını sınırsız analiz, ekip iş birliği ve ileri seviye ikna önerileriyle büyüt.
+            Grow your copy impact with unlimited analyses, collaboration, and advanced persuasion tips.
           </p>
         </header>
 
         <section className="grid gap-6 lg:grid-cols-[2fr,3fr]">
           <article className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow">
             <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-              Neden Premium?
+              Why Premium?
             </h2>
             <ul className="mt-4 space-y-3 text-sm text-slate-300">
-              <li>✔ Sınırsız metin analizi ve geçmişe sınırsız erişim</li>
-              <li>✔ CSV / PDF dışa aktarma ve rapor paylaşma</li>
-              <li>✔ Ekip üyeleriyle ortak çalışma alanları</li>
-              <li>✔ İkna puanı takibi ve A/B test önerileri</li>
-              <li>✔ Öncelikli destek kuyruğu ve roadmap’e etki</li>
+              <li>✔ Unlimited analyses and history</li>
+              <li>✔ Export CSV/PDF and share reports</li>
+              <li>✔ Shared workspace with teammates</li>
+              <li>✔ Persuasion scoring and A/B testing ideas</li>
+              <li>✔ Priority support queue ve roadmap’e etki</li>
             </ul>
             <div className="mt-6 space-y-3 rounded-2xl border border-blue-500/40 bg-blue-500/10 p-4 text-sm text-blue-100">
-              <p className="text-xs uppercase tracking-[0.3em] text-blue-200/80">Çıkarım</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-blue-200/80">Insight</p>
               <p>
-                Premium kullanıcılar, metin analizi üzerinden ortalama %28 daha yüksek dönüşüm yakalıyor. Sen de kampanyalarını daha ikna edici kıl.
+                Premium customers average 28% higher conversions from copy optimization—boost your campaigns too.
               </p>
             </div>
           </article>
@@ -157,7 +157,7 @@ export default function UpgradePage() {
                       disabled={loading}
                       className="w-full rounded-2xl border border-blue-500 bg-blue-500 px-4 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white shadow-lg shadow-blue-500/40 transition hover:bg-blue-600 disabled:border-slate-500 disabled:bg-slate-600"
                     >
-                      {loading ? "Yönlendiriliyor..." : plan.cta.label}
+                      {loading ? "Redirecting..." : plan.cta.label}
                     </button>
                   )}
                 </div>
@@ -174,25 +174,25 @@ export default function UpgradePage() {
 
         <section className="rounded-3xl border border-white/10 bg-[#11141c] p-6 text-sm text-slate-300 shadow">
           <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-            Sıkça sorulan sorular
+            Frequently asked questions
           </h2>
           <dl className="mt-4 space-y-3">
             <div>
-              <dt className="font-semibold text-slate-200">Ödeme sağlayıcısı kim?</dt>
+              <dt className="font-semibold text-slate-200">Who processes payments?</dt>
               <dd className="text-slate-400">
-                Stripe üzerinden 3D Secure destekli güvenli ödeme alıyoruz.
+                We process secure 3D Secure payments through Stripe.
               </dd>
             </div>
             <div>
-              <dt className="font-semibold text-slate-200">Faturamı nasıl alırım?</dt>
+              <dt className="font-semibold text-slate-200">How do I get my invoice?</dt>
               <dd className="text-slate-400">
-                Satın alma tamamlandıktan sonra Supabase hesabındaki e-posta adresine otomatik olarak gönderilir.
+                Invoices are automatically sent to the email on your Supabase account.
               </dd>
             </div>
             <div>
-              <dt className="font-semibold text-slate-200">İstediğim zaman iptal edebilir miyim?</dt>
+              <dt className="font-semibold text-slate-200">Can I cancel anytime?</dt>
               <dd className="text-slate-400">
-                Elbette. Stripe müşteri portalından tek tıkla iptal edebilirsin.
+                Absolutely. Cancel anytime via the Stripe customer portal.
               </dd>
             </div>
           </dl>
