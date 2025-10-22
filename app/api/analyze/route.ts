@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
+import { createClient } from "@/lib/supabase/server";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
+
+type AnalyzeResult = {
+  emotions: Record<string, number>;
+  summary: string;
+  analysis: string;
+  improvement: string;
+};
 
 function safeParseEmotions(text: string): Record<string, number> {
-  const codeMatch = text.match(/<json>([\s\S]*?)<\/json>/i)
-                 || text.match(/```json([\s\S]*?)```/i)
-                 || text.match(/```([\s\S]*?)```/);
+  const codeMatch =
+    text.match(/<json>([\s\S]*?)<\/json>/i) ||
+    text.match(/```json([\s\S]*?)```/i) ||
+    text.match(/```([\s\S]*?)```/);
   const candidate = codeMatch ? codeMatch[1] : text;
   const cleaned = candidate
     .replace(/%/g, "")
@@ -20,14 +29,21 @@ function safeParseEmotions(text: string): Record<string, number> {
       if (!isNaN(Number(n))) out[k] = Math.max(0, Math.min(100, Number(n)));
     }
     if (Object.keys(out).length) return out;
-  } catch {}
+  } catch {
+    /* ignore parse error */
+  }
   return { neutral: 50 };
 }
 
 function extractSummary(text: string): string {
   const m = text.match(/<summary>([\s\S]*?)<\/summary>/i);
   if (m) return m[1].trim();
-  return text.split("\n").map(s => s.trim()).find(Boolean) ?? "Analysis summary unavailable.";
+  return (
+    text
+      .split("\n")
+      .map((s) => s.trim())
+      .find(Boolean) ?? "Analysis summary unavailable."
+  );
 }
 
 function extractTag(text: string, tag: string): string {
@@ -37,14 +53,39 @@ function extractTag(text: string, tag: string): string {
   return text.trim();
 }
 
+async function persistResult(result: AnalyzeResult, text: string) {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from("analyses").insert({
+      user_id: user.id,
+      text,
+      emotions: result.emotions,
+      summary: result.analysis || result.summary,
+    });
+  } catch (err) {
+    console.warn("Failed to persist analysis", err);
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const { text } = await req.json();
-    if (!text || typeof text !== "string") {
+    if (!text || typeof text !== "string" || !text.trim()) {
       return NextResponse.json({ error: "No text" }, { status: 400 });
     }
 
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const trimmedText = text.trim();
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      console.error("OPENAI_API_KEY missing.");
+      return NextResponse.json({ error: "Missing OpenAI configuration" }, { status: 500 });
+    }
+
+    const client = new OpenAI({ apiKey });
 
     const system = `You are an ad emotion rater.
 Return STRICTLY in this format:
@@ -52,14 +93,13 @@ Return STRICTLY in this format:
 <summary>A short, plain-English one-sentence summary (max 20 words).</summary>
 No extra text. No explanations.`;
 
-    const user = `Ad copy:\n"""${text}"""\nReturn the required tags exactly.`;
+    const userPrompt = `Ad copy:\n"""${trimmedText}"""\nReturn the required tags exactly.`;
 
-    // CHAT COMPLETIONS ile çağır
     const resp = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         { role: "system", content: system },
-        { role: "user", content: user }
+        { role: "user", content: userPrompt },
       ],
       temperature: 0.2,
     });
@@ -75,13 +115,13 @@ Produce exactly two blocks wrapped in XML tags, nothing else:
 <improvement>If the emotional impact is weak, generic, or confusing, give one short actionable improvement.
 If the copy already works well, briefly reinforce the strongest element instead. Stay conversational.</improvement>`;
 
-    const narrativeUser = `Ad copy:\n"""${text}"""`;
+    const narrativeUser = `Ad copy:\n"""${trimmedText}"""`;
 
     const narrativeResp = await client.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         { role: "system", content: narrativeSystem },
-        { role: "user", content: narrativeUser }
+        { role: "user", content: narrativeUser },
       ],
       temperature: 0.3,
     });
@@ -90,8 +130,17 @@ If the copy already works well, briefly reinforce the strongest element instead.
     const analysis = extractTag(narrativeRaw, "analysis");
     const improvement = extractTag(narrativeRaw, "improvement");
 
-    return NextResponse.json({ emotions, summary, analysis, improvement });
-  } catch {
+    const result: AnalyzeResult = {
+      emotions,
+      summary,
+      analysis,
+      improvement,
+    };
+
+    await persistResult(result, trimmedText);
+    return NextResponse.json(result);
+  } catch (err) {
+    console.error("Analyze endpoint failed:", err);
     return NextResponse.json({ error: "Analyze failed" }, { status: 500 });
   }
 }

@@ -1,26 +1,59 @@
 "use client";
-import { useEffect, useState } from "react";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import EmotionBars from "@/components/EmotionBars";
 
 type Emotions = Record<string, number>;
 type HistoryItem = {
   t: string;
   em: Emotions;
-  summary?: string;
+  summary: string;
   analysis: string;
   improvement: string;
   ts: number;
 };
 
+const NAV_SECTIONS = [
+  {
+    title: "Get started",
+    items: [
+      { label: "Overview", href: "#overview", active: true },
+      { label: "Quickstart", href: "#quickstart" },
+      { label: "Pricing", href: "/upgrade" },
+      { label: "Libraries", href: "#libraries" },
+    ],
+  },
+  {
+    title: "Core concepts",
+    items: [
+      { label: "Text generation", href: "#text-gen" },
+      { label: "Audio & speech", href: "#audio" },
+      { label: "Structured output", href: "#structured" },
+      { label: "Function calling", href: "#functions" },
+    ],
+  },
+  {
+    title: "Agents",
+    items: [
+      { label: "Overview", href: "#agents" },
+      { label: "Build agents", href: "#build" },
+      { label: "Deploy", href: "#deploy" },
+    ],
+  },
+];
+
 export default function Home() {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [emotions, setEmotions] = useState<Emotions | null>(null);
-  const [summary, setSummary] = useState<string>("");
-  const [analysis, setAnalysis] = useState<string>("");
-  const [improvement, setImprovement] = useState<string>("");
+  const [summary, setSummary] = useState("");
+  const [analysis, setAnalysis] = useState("");
+  const [improvement, setImprovement] = useState("");
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [freeLeft, setFreeLeft] = useState<number>(100);
+  const [freeLeft, setFreeLeft] = useState(100);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const h = localStorage.getItem("affect_history");
@@ -29,15 +62,7 @@ export default function Home() {
       try {
         const parsed = JSON.parse(h) as HistoryItem[];
         if (Array.isArray(parsed)) {
-          const normalized = parsed.map((item) => ({
-            t: item.t ?? "",
-            em: item.em ?? {},
-            summary: item.summary ?? (item as any).sum ?? "",
-            analysis: item.analysis ?? item.summary ?? (item as any).sum ?? "",
-            improvement: item.improvement ?? "",
-            ts: item.ts ?? Date.now(),
-          }));
-          setHistory(normalized.slice(0, 10));
+          setHistory(parsed.slice(0, 10));
         }
       } catch {
         setHistory([]);
@@ -45,12 +70,41 @@ export default function Home() {
     }
     if (f) setFreeLeft(Number(f));
   }, []);
+
   useEffect(() => {
     localStorage.setItem("affect_history", JSON.stringify(history.slice(0, 10)));
   }, [history]);
+
   useEffect(() => {
     localStorage.setItem("affect_free", String(freeLeft));
   }, [freeLeft]);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      try {
+        const res = await fetch("/api/me", { cache: "no-store" });
+        if (!res.ok) {
+          setUserName(null);
+          setUserEmail(null);
+          return;
+        }
+        const data = (await res.json()) as {
+          user: { name: string | null; email: string | null } | null;
+        };
+        if (data.user) {
+          setUserName(data.user.name ?? data.user.email ?? "Misafir");
+          setUserEmail(data.user.email ?? null);
+        } else {
+          setUserName(null);
+          setUserEmail(null);
+        }
+      } catch {
+        setUserName(null);
+        setUserEmail(null);
+      }
+    };
+    loadUser();
+  }, []);
 
   const analyze = async () => {
     if (freeLeft <= 0) {
@@ -88,103 +142,234 @@ export default function Home() {
         ].slice(0, 10)
       );
       setFreeLeft(freeLeft - 1);
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("Analyze error.");
     } finally {
       setLoading(false);
     }
   };
 
+  const reportText = useMemo(() => {
+    const lines: string[] = [];
+    if (analysis) lines.push(`Emotional read: ${analysis}`);
+    if (improvement) lines.push(`Persuasion lift: ${improvement}`);
+    if (!analysis && summary) lines.push(`Summary: ${summary}`);
+    if (emotions) {
+      lines.push(
+        Object.entries(emotions)
+          .sort((a, b) => b[1] - a[1])
+          .map(([k, v]) => `${k}: ${Math.round(v)}%`)
+          .join("\n")
+      );
+    }
+    return `Cortexa Affect AI Report\n\n${lines.join("\n\n")}`;
+  }, [analysis, improvement, summary, emotions]);
+
   const copyReport = async () => {
     if (!emotions) return;
-    const narrative: string[] = [];
-    if (analysis) narrative.push(analysis);
-    if (improvement) narrative.push(improvement);
-    if (!narrative.length && summary) narrative.push(summary);
-    const lines = Object.entries(emotions)
-      .sort((a,b)=>b[1]-a[1])
-      .map(([k,v])=>`${k}: ${Math.round(v)}%`)
-      .join("\n");
-    const txt = `Cortexa Affect AI Report\n\n${narrative.length ? narrative.join("\n\n") + "\n\n" : ""}${lines}`;
-    await navigator.clipboard.writeText(txt);
+    await navigator.clipboard.writeText(reportText);
   };
 
+  const displayName = userName ?? "Misafir";
+  const displayEmail = userEmail ?? "Giriş yapmadın";
+  const avatarInitials = useMemo(() => {
+    const source = userName ?? userEmail ?? "C";
+    const parts = source.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return `${parts[0][0] ?? ""}${parts[parts.length - 1][0] ?? ""}`.toUpperCase();
+    }
+    return source.slice(0, 2).toUpperCase();
+  }, [userName, userEmail]);
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-start p-8 bg-gradient-to-b from-white to-blue-50">
-      <div className="w-full max-w-3xl">
-        <header className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold text-blue-700">Cortexa Affect AI</h1>
-          <p className="text-gray-600 mt-2">Understand emotions behind your ads, instantly.</p>
-          <p className="text-xs text-gray-500 mt-1">Free left: {freeLeft}</p>
-        </header>
-
-        <section className="bg-white border border-gray-200 rounded-2xl shadow p-6">
-          <label className="block text-sm font-medium text-gray-600 mb-2">Ad text</label>
-          <textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Paste your ad text here..."
-            className="w-full h-40 border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <div className="mt-4 flex items-center gap-3">
-            <button
-              onClick={analyze}
-              disabled={loading || !text.trim()}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold disabled:opacity-50"
-            >
-              {loading ? "Analyzing..." : "Analyze Emotion"}
-            </button>
-            {emotions && (
-              <button
-                onClick={copyReport}
-                className="bg-gray-900 hover:bg-black text-white px-4 py-3 rounded-xl"
-              >
-                Copy Report
-              </button>
-            )}
+    <main className="flex min-h-screen bg-[#0d1016] text-slate-100">
+      <aside className="hidden w-72 flex-col border-r border-white/5 bg-[#11141c] px-4 py-6 lg:flex">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-sm font-bold text-white">
+              {avatarInitials}
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-white">{displayName}</p>
+              <p className="text-xs text-slate-400">{displayEmail}</p>
+            </div>
           </div>
+          <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-400">
+            Beta
+          </span>
+        </div>
 
-          {(analysis || improvement || summary) && (
-            <div className="mt-6 text-gray-800 text-base bg-blue-50 border border-blue-100 rounded-xl p-4 space-y-3">
-              {analysis && <p>{analysis}</p>}
-              {improvement && <p className="font-medium text-blue-900">{improvement}</p>}
-              {!analysis && !improvement && summary && <p>{summary}</p>}
+        <div className="mt-6">
+          <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-[#0c0f15] px-3 py-2 text-slate-400">
+            <span className="text-xs">⌘K</span>
+            <input
+              placeholder="Search"
+              className="w-full bg-transparent text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <nav className="mt-6 flex-1 space-y-6 overflow-y-auto">
+          {NAV_SECTIONS.map((section) => (
+            <div key={section.title}>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                {section.title}
+              </p>
+              <ul className="mt-2 space-y-1">
+                {section.items.map((item) => (
+                  <li key={item.label}>
+                    <Link
+                      href={item.href}
+                      className={`block rounded-lg px-3 py-2 text-sm transition ${
+                        item.active
+                          ? "bg-white/10 text-white"
+                          : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+
+        <div className="space-y-3 rounded-2xl border border-white/10 bg-[#0c1018] px-4 py-4 text-sm text-slate-300">
+          <p>
+            Ücretsiz kalan:{" "}
+            <span className="font-semibold text-white">{freeLeft}</span>
+          </p>
+          {!userEmail && (
+            <div className="space-y-2">
+              <Link
+                href="/login"
+                className="block rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center text-xs font-semibold uppercase tracking-[0.3em] text-slate-200 transition hover:bg-white/10"
+              >
+                Giriş yap
+              </Link>
+              <Link
+                href="/sign-up"
+                className="block rounded-xl border border-blue-500 bg-blue-600 px-3 py-2 text-center text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-blue-500"
+              >
+                Kayıt ol
+              </Link>
             </div>
           )}
+          <Link
+            href="/upgrade"
+            className="inline-flex w-full items-center justify-center rounded-xl bg-white text-xs font-semibold uppercase tracking-[0.3em] text-black transition hover:bg-slate-200"
+          >
+            Premiuma geç
+          </Link>
+        </div>
+      </aside>
 
-          {emotions && <EmotionBars data={emotions} />}
+      <div className="flex-1 overflow-y-auto">
+        <div className="mx-auto w-full max-w-4xl px-6 py-10">
+          <header id="overview" className="mb-8 space-y-3">
+            <h1 className="text-4xl font-bold text-white">
+              Reklam metninin duygusal etkisini analiz et
+            </h1>
+            <p className="text-sm text-slate-400">
+              Metnini yapıştır, tek tıkla duygu dağılımını, özet ve ikna önerisini al.
+            </p>
+          </header>
 
-          {emotions && (
-            <details className="mt-6 text-sm text-gray-500">
-              <summary className="cursor-pointer">Raw JSON</summary>
-              <pre className="mt-2 bg-gray-50 p-3 rounded border">
-                {JSON.stringify(emotions, null, 2)}
-              </pre>
-            </details>
-          )}
-        </section>
+          <section className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30">
+            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+              Ad text
+            </label>
+            <textarea
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+              placeholder="Örnek: Yeni finans uygulamamızla bütçeni üç dokunuşla yönet..."
+              className="mt-3 h-40 w-full rounded-2xl border border-white/10 bg-[#0b0e13] p-4 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+            />
 
-        {history.length > 0 && (
-          <section className="mt-10">
-            <h2 className="text-lg font-semibold mb-3 text-gray-800">Recent analyses</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {history.map((h, i) => (
-                <div key={i} className="bg-white border rounded-xl p-4 shadow-sm">
-                  <div className="text-xs text-gray-500 mb-2">{new Date(h.ts).toLocaleString()}</div>
-                  <div className="line-clamp-2 text-sm text-gray-700">{h.t}</div>
-                  {(h.analysis || h.summary) && (
-                    <div className="mt-2 text-xs text-gray-600">
-                      <em>{h.analysis || h.summary}</em>
-                    </div>
-                  )}
-                  {h.improvement && (
-                    <div className="mt-1 text-xs text-blue-800">{h.improvement}</div>
-                  )}
-                </div>
-              ))}
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <button
+                onClick={analyze}
+                disabled={loading || !text.trim()}
+                className="rounded-xl bg-blue-500 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-blue-600 disabled:bg-slate-600"
+              >
+                {loading ? "Analyzing..." : "Analyze Emotion"}
+              </button>
+              {emotions && (
+                <button
+                  onClick={copyReport}
+                  className="rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-100 hover:bg-white/10"
+                >
+                  Copy report
+                </button>
+              )}
             </div>
+
+            {(analysis || improvement || summary) && (
+              <div className="mt-6 space-y-3 rounded-2xl border border-white/10 bg-[#0c0f15] p-4 text-sm text-slate-200">
+                {analysis && <p>{analysis}</p>}
+                {improvement && (
+                  <p className="font-semibold text-blue-300">{improvement}</p>
+                )}
+                {!analysis && !improvement && summary && <p>{summary}</p>}
+              </div>
+            )}
+
+            {emotions && (
+              <div className="mt-6 rounded-xl border border-white/10 bg-[#0c1018] p-4">
+                <EmotionBars data={emotions} />
+              </div>
+            )}
+
+            {emotions && (
+              <details className="mt-6 text-xs text-slate-500">
+                <summary className="cursor-pointer">Raw JSON</summary>
+                <pre className="mt-2 max-h-60 overflow-auto rounded border border-white/10 bg-[#0a0d12] p-3 text-[11px] text-slate-300">
+                  {JSON.stringify(emotions, null, 2)}
+                </pre>
+              </details>
+            )}
           </section>
-        )}
+
+          {history.length > 0 && (
+            <section id="recent" className="mt-10 space-y-4">
+              <header>
+                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">
+                  Geçmiş
+                </p>
+                <h2 className="text-xl font-semibold text-white">
+                  Son analizler
+                </h2>
+              </header>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {history.map((h, index) => (
+                  <article
+                    key={`history-${index}`}
+                    className="rounded-2xl border border-white/10 bg-[#10141b] p-4 shadow-sm shadow-black/40"
+                  >
+                    <p className="text-[11px] text-slate-500">
+                      {new Date(h.ts).toLocaleString()}
+                    </p>
+                    <p className="mt-2 line-clamp-2 text-sm text-slate-200">
+                      {h.t}
+                    </p>
+                    {h.analysis && (
+                      <p className="mt-2 text-xs italic text-slate-400">
+                        {h.analysis}
+                      </p>
+                    )}
+                    {h.improvement && (
+                      <p className="mt-1 text-xs font-semibold text-blue-300">
+                        {h.improvement}
+                      </p>
+                    )}
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
       </div>
     </main>
   );
