@@ -32,8 +32,13 @@ export default function Home() {
   const [summary, setSummary] = useState("");
   const [analysis, setAnalysis] = useState("");
   const [improvement, setImprovement] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [visualSummary, setVisualSummary] = useState("");
+  const [visualAnalysis, setVisualAnalysis] = useState("");
+  const [visualImprovement, setVisualImprovement] = useState("");
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [freeLeft, setFreeLeft] = useState(DAILY_FREE);
+  const [isPremium, setIsPremium] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const pathname = usePathname();
@@ -73,7 +78,7 @@ export default function Home() {
           subscription?: { status: string | null } | null;
         };
         if (data.user) {
-          setUserName(data.user.name ?? data.user.email ?? "Misafir");
+          setUserName(data.user.name ?? data.user.email ?? "Guest");
           setUserEmail(data.user.email ?? null);
         } else {
           setUserName(null);
@@ -106,11 +111,15 @@ export default function Home() {
     setSummary("");
     setAnalysis("");
     setImprovement("");
+    setVisualSummary("");
+    setVisualAnalysis("");
+    setVisualImprovement("");
     try {
+      const trimmedImageUrl = imageUrl.trim();
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, imageUrl: trimmedImageUrl || undefined }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -118,6 +127,9 @@ export default function Home() {
       setSummary(data.summary || "");
       setAnalysis(data.analysis || "");
       setImprovement(data.improvement || "");
+      setVisualSummary(data.visual?.summary || "");
+      setVisualAnalysis(data.visual?.analysis || "");
+      setVisualImprovement(data.visual?.improvement || "");
       setHistory(
         [
           {
@@ -155,20 +167,21 @@ export default function Home() {
           .join("\n")
       );
     }
+    if (visualSummary) lines.push(`Visual summary: ${visualSummary}`);
+    if (visualAnalysis) lines.push(`Visual analysis: ${visualAnalysis}`);
+    if (visualImprovement) lines.push(`Visual improvement: ${visualImprovement}`);
     return `Cortexa Affect AI Report\n\n${lines.join("\n\n")}`;
-  }, [analysis, improvement, summary, emotions]);
+  }, [analysis, improvement, summary, emotions, visualSummary, visualAnalysis, visualImprovement]);
 
   const copyReport = async () => {
     if (!emotions) return;
     await navigator.clipboard.writeText(reportText);
   };
 
-  const displayName = userName ?? "Misafir";
+  const displayName = userName ?? "Guest";
   const displayEmail = userEmail ?? "Not signed in";
-  const [isPremium, setIsPremium] = useState(false);
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const router = useRouter();
-  
   const { dominantEmotion, dominantValue, secondEmotion, secondValue } = useMemo(() => {
     if (!emotions) return { dominantEmotion: null, dominantValue: null, secondEmotion: null, secondValue: null };
     const sorted = Object.entries(emotions).sort((a, b) => b[1] - a[1]);
@@ -210,20 +223,22 @@ export default function Home() {
   return (
     <main className="flex min-h-screen bg-[#0d1016] text-slate-100">
       <aside className="hidden w-72 flex-col border-r border-white/5 bg-[#11141c] px-4 py-6 lg:flex">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-sm font-bold text-white">
-              {avatarInitials}
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-white">{displayName}</p>
-              <p className="text-xs text-slate-400">{displayEmail}</p>
-            </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm font-semibold text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-base">CA</div>
+            Cortexa Affect
           </div>
-          <div className="flex flex-col items-end gap-2">
-            <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-400">
-              Beta
-            </span>
+          <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-400">
+            Beta
+          </span>
+        </div>
+        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-white/10 bg-[#0c1018] p-4">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-blue-500 text-sm font-bold text-white">
+            {avatarInitials}
+          </div>
+          <div className="space-y-1 text-sm">
+            <p className="font-semibold text-white">{displayName}</p>
+            <p className="text-xs text-slate-400">{displayEmail}</p>
           </div>
         </div>
 
@@ -310,31 +325,57 @@ export default function Home() {
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{remainingLabel}</p>
           </header>
 
-          <section className="grid gap-8 md:grid-cols-2 xl:grid-cols-4 mb-6">
-            <article className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-100 shadow">
-              <p className="text-xs uppercase tracking-[0.3em] text-blue-200/80">Primary emotion</p>
-              <p className="mt-2 text-2xl font-semibold text-white">{(dominantEmotion ?? "Pending").toString()}</p>
-              <p className="text-xs text-blue-200/70">{dominantValue ? `${Math.round(dominantValue)}% intensity` : "Shown after analysis"}</p>
+          <section className="grid gap-8 md:grid-cols-2 xl:grid-cols-4 mb-10">
+            <article className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#243e73] via-[#1a2645] to-[#0d1322] p-5 shadow-xl shadow-black/40">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#60a5fa_0%,rgba(8,12,18,0)_60%)] opacity-60" />
+              <div className="relative flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-blue-200/80">
+                  <span className="text-base">🎯</span>
+                  <span>Primary emotion</span>
+                </div>
+                <p className="text-3xl font-semibold text-white">{(dominantEmotion ?? "Pending").toString()}</p>
+                <p className="text-xs text-blue-200/70">{typeof dominantValue === "number" ? `${Math.round(dominantValue)}% intensity` : "Shown after analysis"}</p>
+              </div>
             </article>
-            <article className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Secondary emotion</p>
-              <p className="mt-2 text-2xl font-semibold text-white">{(secondEmotion ?? "Pending").toString()}</p>
-              <p className="text-xs text-slate-400">{secondValue ? `${Math.round(secondValue)}% accompanies` : "Shown after analysis"}</p>
+            <article className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#312d52] via-[#1f1c36] to-[#111021] p-5 text-sm text-purple-100 shadow-xl shadow-black/40">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#a855f7_0%,rgba(17,16,33,0)_60%)] opacity-50" />
+              <div className="relative flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-purple-200/80">
+                  <span className="text-base">🔄</span>
+                  <span>Secondary emotion</span>
+                </div>
+                <p className="text-3xl font-semibold text-white">{(secondEmotion ?? "Pending").toString()}</p>
+                <p className="text-xs text-purple-200/70">{typeof secondValue === "number" ? `${Math.round(secondValue)}% accompanies` : "Shown after analysis"}</p>
+              </div>
             </article>
-            <article className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Daily quota</p>
-              <p className="mt-2 text-2xl font-semibold text-white">{isPremium ? "Unlimited" : freeLeft}</p>
-              <p className="text-xs text-slate-400">{isPremium ? "Your premium subscription removes the limit" : "Daily free runs"}</p>
+            <article className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#1f2a2e] via-[#151b1e] to-[#0b0f16] p-5 text-sm text-emerald-100 shadow-xl shadow-black/40">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#34d399_0%,rgba(11,15,22,0)_60%)] opacity-45" />
+              <div className="relative flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-emerald-200/80">
+                  <span className="text-base">🗓️</span>
+                  <span>Daily quota</span>
+                </div>
+                <p className="text-3xl font-semibold text-white">{isPremium ? "Unlimited" : freeLeft}</p>
+                <p className="text-xs text-emerald-200/70">{isPremium ? "Premium subscription removes the limit" : "Daily free runs"}</p>
+              </div>
             </article>
-            <article className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 md:col-span-2 lg:col-span-1">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Quick action</p>
-              <p className="mt-2 text-xs text-slate-300">Boost your copy with persuasion tips from the Premium plan.</p>
-              <Link
-                href="/upgrade"
-                className="mt-3 inline-flex w-full items-center justify-center rounded-xl bg-blue-500 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-blue-600"
-              >
-                View plans
-              </Link>
+            <article className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#2b364c] via-[#171d2c] to-[#0d1018] p-5 text-sm text-slate-200 shadow-xl shadow-black/40">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,#60a5fa_0%,rgba(13,16,24,0)_60%)] opacity-30" />
+              <div className="relative flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-slate-300">
+                  <span className="text-base">🚀</span>
+                  <span>Quick action</span>
+                </div>
+                <p className="text-xs text-slate-300">
+                  Boost your copy with persuasion tactics unlocked in the premium workspace.
+                </p>
+                <Link
+                  href="/upgrade"
+                  className="inline-flex w-full items-center justify-center rounded-xl bg-blue-500 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-blue-600"
+                >
+                  View plans
+                </Link>
+              </div>
             </article>
           </section>
 
@@ -350,6 +391,23 @@ export default function Home() {
                   placeholder="Example: Manage your budget in three taps with our new finance app..."
                   className="h-48 w-full rounded-xl border border-white/10 bg-[#080c12] p-4 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                 />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                  Visual URL (optional)
+                </label>
+                <input
+                  value={imageUrl}
+                  onChange={(event) => setImageUrl(event.target.value)}
+                  placeholder="Paste an image URL for visual analysis"
+                  className="w-full rounded-xl border border-white/10 bg-[#080c12] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                />
+                {imageUrl && (
+                  <div className="overflow-hidden rounded-xl border border-white/10 bg-[#080c12]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imageUrl} alt="Ad visual" className="h-48 w-full object-cover" />
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
@@ -381,18 +439,30 @@ export default function Home() {
               )}
             </div>
 
-            <aside className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30 space-y-4 text-sm text-slate-300">
+            <aside className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30 space-y-5 text-sm text-slate-300">
               <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
                 Writing tips
               </h2>
-              <p>
-                1. Use an opening sentence that taps into your audience's emotions. <br />
-                2. State the unique benefit in one clear sentence. <br />
-                3. Add trust-building proof or data. <br />
-                4. Offer a clear call to action and timing.
-              </p>
+              <ul className="space-y-3 text-xs text-slate-300">
+                <li className="flex items-start gap-2">
+                  <span className="mt-[2px] text-blue-300">•</span>
+                  <span>Open with an emotion that mirrors your audience&rsquo;s current frustration or desire.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-[2px] text-blue-300">•</span>
+                  <span>State the unique benefit in a single sharp sentence—avoid clutter.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-[2px] text-blue-300">•</span>
+                  <span>Add trust-building proof such as numbers, testimonials, or guarantees.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-[2px] text-blue-300">•</span>
+                  <span>Close with a clear call to action and the next milestone your reader should reach.</span>
+                </li>
+              </ul>
               <div className="rounded-2xl border border-white/10 bg-[#0b0f16] px-4 py-3 text-xs text-slate-400">
-                Try variants for different emotions using the '+' prompt; Premium stores and compares them for you.
+                Try variants for different emotions using the &ldquo;+&rdquo; prompt; Premium stores and compares them for you.
               </div>
             </aside>
           </section>
@@ -432,6 +502,16 @@ export default function Home() {
                     </pre>
                   </details>
                 )}
+                {(visualSummary || visualAnalysis || visualImprovement) && (
+                  <div className="space-y-2 rounded-2xl border border-white/10 bg-[#0c1018] p-4 text-sm text-slate-200">
+                    <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Visual insight</h3>
+                    {visualSummary && <p className="text-sm">{visualSummary}</p>}
+                    {visualAnalysis && <p className="text-xs text-slate-400">{visualAnalysis}</p>}
+                    {visualImprovement && (
+                      <p className="text-xs font-semibold text-blue-300">{visualImprovement}</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </section>
@@ -447,33 +527,45 @@ export default function Home() {
                 </h2>
               </header>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {history.map((h, index) => (
-                  <article
-                    key={`history-${index}`}
-                    className="rounded-2xl border border-white/10 bg-[#10141b] p-4 shadow-sm shadow-black/40"
-                  >
-                    <p className="text-[11px] text-slate-500">
-                      {new Date(h.ts).toLocaleString()}
-                    </p>
-                    <p className="mt-2 line-clamp-2 text-sm text-slate-200">
-                      {h.t}
-                    </p>
-                    {h.analysis && (
-                      <p className="mt-2 text-xs italic text-slate-400">
-                        {h.analysis}
+                {history.map((h, index) => {
+                  const top = Object.entries(h.em || {})
+                    .sort((a, b) => (b[1] ?? 0) - (a[1] ?? 0))[0];
+                  return (
+                    <article
+                      key={`history-${index}`}
+                      className="rounded-2xl border border-white/10 bg-[#10141b] p-4 shadow-sm shadow-black/40"
+                    >
+                      <div className="flex items-center justify-between text-[11px] text-slate-500">
+                        <span>{new Date(h.ts).toLocaleString()}</span>
+                        {top && (
+                          <span className="rounded-full border border-blue-500/40 bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.3em] text-blue-200">
+                            {top[0]}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-2 line-clamp-2 text-sm text-slate-200">
+                        {h.t}
                       </p>
-                    )}
-                    {h.improvement && (
-                      <p className="mt-1 text-xs font-semibold text-blue-300">
-                        {h.improvement}
-                      </p>
-                    )}
-                  </article>
-                ))}
+                      {h.analysis && (
+                        <p className="mt-2 text-xs italic text-slate-400">
+                          {h.analysis}
+                        </p>
+                      )}
+                      {h.improvement && (
+                        <p className="mt-1 text-xs font-semibold text-blue-300">
+                          {h.improvement}
+                        </p>
+                      )}
+                    </article>
+                  );
+                })}
               </div>
             </section>
           )}
         </div>
+        <footer className="mt-12 rounded-3xl border border-white/10 bg-[#0f131a] px-6 py-4 text-xs text-slate-500">
+          Cortexa Affect © {new Date().getFullYear()} · Crafted to decode the emotions behind your words.
+        </footer>
       </div>
     </main>
   );

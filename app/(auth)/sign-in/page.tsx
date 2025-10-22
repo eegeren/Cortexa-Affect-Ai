@@ -64,7 +64,7 @@ export default function SignInPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.35em] text-blue-400">
-                E-posta adresi
+                Email address
               </label>
               <input
                 id="email"
@@ -72,7 +72,7 @@ export default function SignInPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 required
-                placeholder="ornek@markan.com"
+                placeholder="email@example.com"
                 className="mt-2 w-full rounded-2xl border border-blue-100 bg-blue-50/40 p-4 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-200/70"
               />
             </div>
@@ -106,7 +106,7 @@ export default function SignInPage() {
                 <input type="checkbox" className="h-4 w-4 rounded border-blue-200 text-blue-600 focus:ring-blue-400" /> Remember me
               </label>
               <Link href="#" className="font-semibold uppercase tracking-[0.3em] text-blue-500 underline underline-offset-4 hover:text-blue-700">
-                Passwordmi unuttum
+                Forgot password
               </Link>
             </div>
 

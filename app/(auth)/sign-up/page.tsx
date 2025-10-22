@@ -107,7 +107,7 @@ export default function SignUpPage() {
             href="/"
             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-300 transition hover:bg-white/10"
           >
-            ← Ana sayfa
+            ← Back to dashboard
           </Link>
           <div className="mt-8 space-y-4">
             <h1 className="text-3xl font-bold text-white">
@@ -158,7 +158,7 @@ export default function SignUpPage() {
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   required
-                  placeholder="e.g. Elif"
+                  placeholder="e.g. Taylor Reed"
                   className="mt-2 w-full rounded-2xl border border-white/10 bg-[#0b0e13] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                 />
               </div>
@@ -173,7 +173,7 @@ export default function SignUpPage() {
                   id="company"
                   value={company}
                   onChange={(event) => setCompany(event.target.value)}
-                  placeholder="Opsiyonel"
+                  placeholder="Optional"
                   className="mt-2 w-full rounded-2xl border border-white/10 bg-[#0b0e13] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                 />
               </div>
@@ -192,7 +192,7 @@ export default function SignUpPage() {
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 required
-                placeholder="ornek@markan.com"
+                placeholder="email@example.com"
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-[#0b0e13] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
               />
             </div>
@@ -232,9 +232,9 @@ export default function SignUpPage() {
                 className="mt-1 h-4 w-4 rounded border-white/20 bg-transparent text-blue-500 focus:ring-blue-500/40"
               />
               <span>
-                <strong className="text-blue-300">Terms of Service</strong> ve{" "}
-                <strong className="text-blue-300">Privacy Policy</strong> read and accepted
-                ve kabul ediyorum.
+                I have read and accept the{" "}
+                <strong className="text-blue-300">Terms of Service</strong> and{" "}
+                <strong className="text-blue-300">Privacy Policy</strong>.
               </span>
             </label>
 

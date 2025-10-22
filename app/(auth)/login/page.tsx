@@ -70,7 +70,7 @@ export default function LoginPage() {
       if (supabaseError) {
         setError(supabaseError.message);
       } else {
-        setStatus("Send magic linkildi. Gelen kutunu kontrol et!");
+        setStatus("Magic link sent. Check your inbox to continue.");
       }
     } finally {
       setMagicLoading(false);
@@ -111,7 +111,7 @@ export default function LoginPage() {
             href="/"
             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-300 transition hover:bg-white/10"
           >
-            ← Ana sayfa
+            ← Back to dashboard
           </Link>
           <div className="mt-8 space-y-4">
             <h1 className="text-3xl font-bold text-white">Sign in to Cortexa</h1>
@@ -187,7 +187,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     required
-                    placeholder="ornek@markan.com"
+                    placeholder="email@example.com"
                     className="mt-2 w-full rounded-2xl border border-white/10 bg-[#0b0e13] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                   />
                 </div>
@@ -204,7 +204,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     required
-                    placeholder="Passwordni gir"
+                    placeholder="Enter your password"
                     className="mt-2 w-full rounded-2xl border border-white/10 bg-[#0b0e13] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                   />
                 </div>
@@ -231,7 +231,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     required
-                    placeholder="ornek@markan.com"
+                    placeholder="email@example.com"
                     className="mt-2 w-full rounded-2xl border border-white/10 bg-[#0b0e13] px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                   />
                 </div>
@@ -240,14 +240,14 @@ export default function LoginPage() {
                   disabled={magicLoading}
                   className="w-full rounded-2xl border border-blue-500 bg-blue-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:border-slate-500 disabled:bg-slate-600"
                 >
-                  {magicLoading ? "Send magic linkiliyor..." : "Send magic link"}
+                  {magicLoading ? "Sending magic link..." : "Send magic link"}
                 </button>
               </form>
             )}
 
             <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-[0.25em] text-slate-500">
               <span className="h-px flex-1 bg-white/10" />
-              <span>veya</span>
+              <span>OR</span>
               <span className="h-px flex-1 bg-white/10" />
             </div>
 

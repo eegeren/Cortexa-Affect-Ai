@@ -55,6 +55,7 @@ export default function AuthButtons() {
     await supabase.auth.signOut();
     setUser(null);
     broadcastAuthState(null);
+    window.location.href = "/";
   };
 
   if (loading) {
@@ -75,7 +76,7 @@ export default function AuthButtons() {
   return (
     <div className="flex items-center gap-2 rounded-full border border-blue-100 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.25em] text-blue-500 shadow-sm">
       <span className="max-w-[11rem] truncate text-blue-700">
-        {user.email ?? "Hesap"}
+        {user.email ?? "Account"}
       </span>
       <button
         onClick={handleSignOut}

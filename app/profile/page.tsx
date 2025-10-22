@@ -10,13 +10,13 @@ interface MeResponse {
 }
 
 const SUB_STATUS_LABELS: Record<string, string> = {
-  active: "Aktif Premium",
+  active: "Active premium",
   trialing: "Trialing",
   premium: "Premium",
   pro: "Pro",
 };
 
-export default function ProfileePage() {
+export default function ProfilePage() {
   const [data, setData] = useState<MeResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -84,7 +84,7 @@ export default function ProfileePage() {
                   href="/upgrade"
                   className="inline-flex items-center rounded-xl border border-blue-500/40 bg-blue-500/20 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-blue-100 transition hover:bg-blue-500/30"
                 >
-                  Plans
+                  View plans
                 </Link>
                 <Link
                   href="/api/auth/logout?redirect=/"
@@ -112,7 +112,7 @@ export default function ProfileePage() {
               <p className="mt-2 text-xl font-semibold text-white">
                 {statusKey === "free" ? "Free" : "Premium"}
               </p>
-              <p className="text-xs text-slate-400">Limit durumunu buradan takip edebilirsin.</p>
+              <p className="text-xs text-slate-400">Monitor your limit here.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
               <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Quick actions</p>

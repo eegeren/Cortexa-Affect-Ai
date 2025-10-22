@@ -21,7 +21,7 @@ const plans = [
   },
   {
     name: "Premium",
-    price: "₺399/ay",
+    price: "₺399/mo",
     description: "Unlimited runs, team sharing, and deep insight reports.",
     features: [
       "Unlimited analyses and saved reports",
@@ -109,7 +109,7 @@ export default function UpgradePage() {
               <li>✔ Export CSV/PDF and share reports</li>
               <li>✔ Shared workspace with teammates</li>
               <li>✔ Persuasion scoring and A/B testing ideas</li>
-              <li>✔ Priority support queue ve roadmap’e etki</li>
+              <li>✔ Priority support queue and roadmap influence</li>
             </ul>
             <div className="mt-6 space-y-3 rounded-2xl border border-blue-500/40 bg-blue-500/10 p-4 text-sm text-blue-100">
               <p className="text-xs uppercase tracking-[0.3em] text-blue-200/80">Insight</p>
