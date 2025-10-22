@@ -291,7 +291,7 @@ export default function Home() {
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{remainingLabel}</p>
           </header>
 
-          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             <article className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-100 shadow">
               <p className="text-xs uppercase tracking-[0.3em] text-blue-200/80">En baskın duygu</p>
               <p className="mt-2 text-2xl font-semibold text-white">{(dominantEmotion ?? "Bekleniyor").toString()}</p>
@@ -319,7 +319,7 @@ export default function Home() {
             </article>
           </section>
 
-          <section className="grid gap-6 lg:grid-cols-[3fr,2fr]">
+          <section className="grid gap-8 lg:grid-cols-[3fr,2fr]">
             <div className="rounded-3xl border border-white/10 bg-[#0f131a] p-6 shadow-lg shadow-black/40 space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
@@ -378,7 +378,7 @@ export default function Home() {
             </aside>
           </section>
 
-          <section className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30">
+          <section className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30 mt-10">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-4">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">Doğal dile geri bildirim</h2>
