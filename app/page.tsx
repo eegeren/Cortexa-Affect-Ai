@@ -18,21 +18,6 @@ type HistoryItem = {
 
 const DAILY_FREE = 3;
 
-function fileToDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        resolve(reader.result);
-      } else {
-        reject(new Error("Unsupported file reader result"));
-      }
-    };
-    reader.onerror = () => reject(reader.error ?? new Error("Failed to read file"));
-    reader.readAsDataURL(file);
-  });
-}
-
 const NAV_LINKS = [
   { label: "Dashboard", href: "#overview" },
   { label: "History", href: "#recent" },
@@ -122,6 +107,10 @@ export default function Home() {
       alert("Free limit reached. We'll add checkout later.");
       return;
     }
+    if (!text.trim() && !imageFile) {
+      alert("Add ad text or upload a visual before analyzing.");
+      return;
+    }
     setLoading(true);
     setEmotions(null);
     setSummary("");
@@ -131,14 +120,14 @@ export default function Home() {
     setVisualAnalysis("");
     setVisualImprovement("");
     try {
-      let imageDataUrl: string | undefined;
+      const formData = new FormData();
+      formData.append("text", text);
       if (imageFile) {
-        imageDataUrl = await fileToDataUrl(imageFile);
+        formData.append("image", imageFile);
       }
       const res = await fetch("/api/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, imageBase64: imageDataUrl }),
+        body: formData,
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -152,7 +141,7 @@ export default function Home() {
       setHistory(
         [
           {
-            t: text,
+            t: text.trim() ? text : "[image-only submission]",
             em: data.emotions || {},
             summary: data.summary || "",
             analysis: data.analysis || data.summary || "",
@@ -472,7 +461,7 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={analyze}
-                  disabled={loading || !text.trim()}
+                  disabled={loading || (!text.trim() && !imageFile)}
                   className="rounded-xl bg-blue-500 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-blue-600 disabled:bg-slate-600"
                 >
                   {loading ? "Analyzing..." : "Analyze Emotion"}
@@ -603,7 +592,7 @@ export default function Home() {
                         )}
                       </div>
                       <p className="mt-2 line-clamp-2 text-sm text-slate-200">
-                        {h.t}
+                        {h.t || "[image-only submission]"}
                       </p>
                       {h.analysis && (
                         <p className="mt-2 text-xs italic text-slate-400">

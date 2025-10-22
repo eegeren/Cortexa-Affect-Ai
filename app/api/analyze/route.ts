@@ -78,16 +78,23 @@ async function persistResult(result: AnalyzeResult, text: string) {
 
 export async function POST(req: Request) {
   try {
-    const { text, imageUrl, imageBase64 } = await req.json();
-    if (!text || typeof text !== "string" || !text.trim()) {
-      return NextResponse.json({ error: "No text" }, { status: 400 });
+    const formData = await req.formData();
+    const textField = formData.get("text");
+    const imageField = formData.get("image");
+    const text = typeof textField === "string" ? textField : "";
+    const trimmedText = text.trim();
+    let visualSource = "";
+
+    if (imageField instanceof File) {
+      const arrayBuffer = await imageField.arrayBuffer();
+      const base64 = Buffer.from(arrayBuffer).toString("base64");
+      const mime = imageField.type || "image/png";
+      visualSource = `data:${mime};base64,${base64}`;
     }
 
-    const trimmedText = text.trim();
-    const cleanedImageBase64 =
-      typeof imageBase64 === "string" ? imageBase64.trim() : "";
-    const cleanedImageUrl = typeof imageUrl === "string" ? imageUrl.trim() : "";
-    const visualSource = cleanedImageBase64 || cleanedImageUrl;
+    if (!trimmedText && !visualSource) {
+      return NextResponse.json({ error: "No content provided" }, { status: 400 });
+    }
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       console.error("OPENAI_API_KEY missing.");
@@ -96,48 +103,55 @@ export async function POST(req: Request) {
 
     const client = new OpenAI({ apiKey });
 
-    const system = `You are an ad emotion rater.
+    let emotions: AnalyzeResult["emotions"] = {};
+    let summary = "";
+    let analysis = "";
+    let improvement = "";
+
+    if (trimmedText) {
+      const system = `You are an ad emotion rater.
 Return STRICTLY in this format:
 <json>{"joy":75,"trust":62,"anticipation":40,"fear":10}</json>
 <summary>Return a one-sentence summary (max 20 words) in the same language as the ad copy.</summary>
 No extra text. No explanations.`;
 
-    const userPrompt = `Ad copy:\n"""${trimmedText}"""\nReturn the required tags exactly.`;
+      const userPrompt = `Ad copy:\n"""${trimmedText}"""\nReturn the required tags exactly.`;
 
-    const resp = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: 0.2,
-    });
+      const resp = await client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: 0.2,
+      });
 
-    const raw = resp.choices[0]?.message?.content ?? "";
-    const emotions = safeParseEmotions(raw);
-    const summary = extractSummary(raw);
+      const raw = resp.choices[0]?.message?.content ?? "";
+      emotions = safeParseEmotions(raw);
+      summary = extractSummary(raw);
 
-    const narrativeSystem = `You are an expert in advertising psychology and emotional resonance.
+      const narrativeSystem = `You are an expert in advertising psychology and emotional resonance.
 When given ad copy, always respond in the same language as the ad.
 Produce exactly two blocks wrapped in XML tags, nothing else:
 <analysis>Natural, conversational description of the emotional tone and how it feels. Avoid lists.</analysis>
 <improvement>If the emotional impact is weak, generic, or confusing, give one short actionable improvement.
 If the copy already works well, briefly reinforce the strongest element instead. Stay conversational.</improvement>`;
 
-    const narrativeUser = `Ad copy:\n"""${trimmedText}"""`;
+      const narrativeUser = `Ad copy:\n"""${trimmedText}"""`;
 
-    const narrativeResp = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        { role: "system", content: narrativeSystem },
-        { role: "user", content: narrativeUser },
-      ],
-      temperature: 0.3,
-    });
+      const narrativeResp = await client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: narrativeSystem },
+          { role: "user", content: narrativeUser },
+        ],
+        temperature: 0.3,
+      });
 
-    const narrativeRaw = narrativeResp.choices[0]?.message?.content ?? "";
-    const analysis = extractTag(narrativeRaw, "analysis");
-    const improvement = extractTag(narrativeRaw, "improvement");
+      const narrativeRaw = narrativeResp.choices[0]?.message?.content ?? "";
+      analysis = extractTag(narrativeRaw, "analysis");
+      improvement = extractTag(narrativeRaw, "improvement");
+    }
 
     let visual: AnalyzeResult["visual"] | undefined;
 
@@ -186,6 +200,15 @@ If the copy already works well, briefly reinforce the strongest element instead.
       }
     }
 
+    if (!trimmedText) {
+      if (!summary) summary = visual?.summary ?? "Visual analysis summary unavailable.";
+      if (!analysis) analysis = visual?.analysis ?? summary;
+      if (!improvement) improvement = visual?.improvement ?? "";
+      if (!Object.keys(emotions).length) {
+        emotions = { neutral: 50 };
+      }
+    }
+
     const result: AnalyzeResult = {
       emotions,
       summary,
@@ -194,7 +217,7 @@ If the copy already works well, briefly reinforce the strongest element instead.
       visual,
     };
 
-    await persistResult(result, trimmedText);
+    await persistResult(result, trimmedText || "[image-only submission]");
     return NextResponse.json(result);
   } catch (err) {
     console.error("Analyze endpoint failed:", err);
