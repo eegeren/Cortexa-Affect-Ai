@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import EmotionBars from "@/components/EmotionBars";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -18,6 +18,21 @@ type HistoryItem = {
 
 const DAILY_FREE = 3;
 
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        resolve(reader.result);
+      } else {
+        reject(new Error("Unsupported file reader result"));
+      }
+    };
+    reader.onerror = () => reject(reader.error ?? new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
 const NAV_LINKS = [
   { label: "Dashboard", href: "#overview" },
   { label: "History", href: "#recent" },
@@ -32,7 +47,8 @@ export default function Home() {
   const [summary, setSummary] = useState("");
   const [analysis, setAnalysis] = useState("");
   const [improvement, setImprovement] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
   const [visualSummary, setVisualSummary] = useState("");
   const [visualAnalysis, setVisualAnalysis] = useState("");
   const [visualImprovement, setVisualImprovement] = useState("");
@@ -115,11 +131,14 @@ export default function Home() {
     setVisualAnalysis("");
     setVisualImprovement("");
     try {
-      const trimmedImageUrl = imageUrl.trim();
+      let imageDataUrl: string | undefined;
+      if (imageFile) {
+        imageDataUrl = await fileToDataUrl(imageFile);
+      }
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, imageUrl: trimmedImageUrl || undefined }),
+        body: JSON.stringify({ text, imageBase64: imageDataUrl }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
@@ -203,6 +222,28 @@ export default function Home() {
   }, [userName, userEmail]);
 
   const remainingLabel = isPremium ? "Unlimited analyses" : `Free remaining: ${freeLeft}`;
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  const handleImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImageFile(null);
+      setImagePreview("");
+    }
+  };
 
   const handleSidebarSignOut = async () => {
     try {
@@ -392,22 +433,40 @@ export default function Home() {
                   className="h-48 w-full rounded-xl border border-white/10 bg-[#080c12] p-4 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                 />
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-                  Visual URL (optional)
+                  Visual upload (optional)
                 </label>
-                <input
-                  value={imageUrl}
-                  onChange={(event) => setImageUrl(event.target.value)}
-                  placeholder="Paste an image URL for visual analysis"
-                  className="w-full rounded-xl border border-white/10 bg-[#080c12] px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-                />
-                {imageUrl && (
-                  <div className="overflow-hidden rounded-xl border border-white/10 bg-[#080c12]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={imageUrl} alt="Ad visual" className="h-48 w-full object-cover" />
-                  </div>
-                )}
+                <div className="flex flex-col gap-3 rounded-xl border border-white/10 bg-[#080c12] p-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="text-xs text-slate-300 file:mr-3 file:rounded-full file:border-0 file:bg-blue-500 file:px-4 file:py-2 file:text-[11px] file:font-semibold file:uppercase file:tracking-[0.3em] file:text-white hover:file:bg-blue-600 focus:outline-none"
+                  />
+                  {imagePreview && (
+                    <div className="overflow-hidden rounded-lg border border-white/10">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={imagePreview} alt="Ad visual preview" className="h-48 w-full object-cover" />
+                    </div>
+                  )}
+                  {imageFile && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (imagePreview) {
+                          URL.revokeObjectURL(imagePreview);
+                        }
+                        setImageFile(null);
+                        setImagePreview("");
+                      }}
+                      className="self-start rounded-full border border-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-slate-300 transition hover:bg-white/10"
+                    >
+                      Remove image
+                    </button>
+                  )}
+                  {!imageFile && <p className="text-[11px] text-slate-500">PNG, JPG, or WebP. Max ~5MB recommended.</p>}
+                </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-3">

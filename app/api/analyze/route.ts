@@ -78,13 +78,16 @@ async function persistResult(result: AnalyzeResult, text: string) {
 
 export async function POST(req: Request) {
   try {
-    const { text, imageUrl } = await req.json();
+    const { text, imageUrl, imageBase64 } = await req.json();
     if (!text || typeof text !== "string" || !text.trim()) {
       return NextResponse.json({ error: "No text" }, { status: 400 });
     }
 
     const trimmedText = text.trim();
+    const cleanedImageBase64 =
+      typeof imageBase64 === "string" ? imageBase64.trim() : "";
     const cleanedImageUrl = typeof imageUrl === "string" ? imageUrl.trim() : "";
+    const visualSource = cleanedImageBase64 || cleanedImageUrl;
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       console.error("OPENAI_API_KEY missing.");
@@ -138,7 +141,7 @@ If the copy already works well, briefly reinforce the strongest element instead.
 
     let visual: AnalyzeResult["visual"] | undefined;
 
-    if (cleanedImageUrl) {
+    if (visualSource) {
       try {
         const visionResp = await client.chat.completions.create({
           model: "gpt-4o-mini",
@@ -159,7 +162,7 @@ If the copy already works well, briefly reinforce the strongest element instead.
                 {
                   type: "image_url",
                   image_url: {
-                    url: cleanedImageUrl,
+                    url: visualSource,
                   },
                 },
               ],
