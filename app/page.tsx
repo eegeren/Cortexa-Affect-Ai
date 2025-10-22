@@ -291,7 +291,7 @@ export default function Home() {
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{remainingLabel}</p>
           </header>
 
-          <section className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <article className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-100 shadow">
               <p className="text-xs uppercase tracking-[0.3em] text-blue-200/80">En baskın duygu</p>
               <p className="mt-2 text-2xl font-semibold text-white">{(dominantEmotion ?? "Bekleniyor").toString()}</p>
@@ -319,7 +319,7 @@ export default function Home() {
             </article>
           </section>
 
-          <section className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30">
+          <section className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30 space-y-6">
             <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
               Ad text
             </label>
@@ -372,6 +372,45 @@ export default function Home() {
                 </pre>
               </details>
             )}
+          </section>
+
+          <section className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-4">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">Doğal dile geri bildirim</h2>
+                {(analysis || improvement || summary) ? (
+                  <div className="space-y-3 text-sm text-slate-200">
+                    {analysis && <p>{analysis}</p>}
+                    {improvement && (
+                      <p className="font-semibold text-blue-300">{improvement}</p>
+                    )}
+                    {!analysis && !improvement && summary && <p>{summary}</p>}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500">
+                    Analiz tamamlandığında özet ve ikna önerisini burada göreceksin.
+                  </p>
+                )}
+              </div>
+              <div className="space-y-4">
+                <h2 className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500">Duygu dağılımı</h2>
+                {emotions ? (
+                  <div className="rounded-2xl border border-white/10 bg-[#0c1018] p-4">
+                    <EmotionBars data={emotions} />
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500">Grafik, analiz tamamlandıktan sonra gösterilir.</p>
+                )}
+                {emotions && (
+                  <details className="text-xs text-slate-500">
+                    <summary className="cursor-pointer">Raw JSON</summary>
+                    <pre className="mt-2 max-h-60 overflow-auto rounded border border-white/10 bg-[#0a0d12] p-3 text-[11px] text-slate-300">
+                      {JSON.stringify(emotions, null, 2)}
+                    </pre>
+                  </details>
+                )}
+              </div>
+            </div>
           </section>
 
           {history.length > 0 && (
