@@ -35,6 +35,7 @@ export default function Home() {
   const [freeLeft, setFreeLeft] = useState(DAILY_FREE);
   const [userName, setUserName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     const h = localStorage.getItem("affect_history");
@@ -164,6 +165,18 @@ export default function Home() {
   const displayName = userName ?? "Misafir";
   const displayEmail = userEmail ?? "Giriş yapmadın";
   const [isPremium, setIsPremium] = useState(false);
+  
+  const { dominantEmotion, dominantValue, secondEmotion, secondValue } = useMemo(() => {
+    if (!emotions) return { dominantEmotion: null, dominantValue: null, secondEmotion: null, secondValue: null };
+    const sorted = Object.entries(emotions).sort((a, b) => b[1] - a[1]);
+    return {
+      dominantEmotion: sorted[0]?.[0] ?? null,
+      dominantValue: sorted[0]?.[1] ?? null,
+      secondEmotion: sorted[1]?.[0] ?? null,
+      secondValue: sorted[1]?.[1] ?? null,
+    };
+  }, [emotions]);
+
   const avatarInitials = useMemo(() => {
     const source = userName ?? userEmail ?? "C";
     const parts = source.trim().split(/\s+/);
