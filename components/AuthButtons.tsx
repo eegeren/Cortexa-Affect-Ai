@@ -27,7 +27,7 @@ export default function AuthButtons() {
     supabase.auth.getUser().then(({ data }) => {
       if (!mounted) return;
       const initial = data.user
-        ? { id: data.user.id, email: data.user.email }
+        ? { id: data.user.id, email: data.user.email ?? null }
         : null;
       setUser(initial);
       broadcastAuthState(initial);
@@ -38,7 +38,7 @@ export default function AuthButtons() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       const nextUser = session?.user
-        ? { id: session.user.id, email: session.user.email }
+        ? { id: session.user.id, email: session.user.email ?? null }
         : null;
       setUser(nextUser);
       broadcastAuthState(nextUser);
