@@ -81,17 +81,18 @@ export default function Home() {
         if (data.user) {
           setUserName(data.user.name ?? data.user.email ?? "Guest");
           setUserEmail(data.user.email ?? null);
+          const status = data.subscription?.status?.toLowerCase() ?? "";
+          const premium = ["active", "trialing", "premium", "pro"].includes(status);
+          setIsPremium(premium);
+          if (premium) {
+            setFreeLeft(Number.MAX_SAFE_INTEGER);
+          } else {
+            setFreeLeft(Math.max(0, DAILY_FREE - (data.usage ?? 0)));
+          }
         } else {
           setUserName(null);
           setUserEmail(null);
-        }
-        const status = data.subscription?.status?.toLowerCase() ?? "";
-        const premium = ["active", "trialing", "premium", "pro"].includes(status);
-        setIsPremium(premium);
-        if (premium) {
-          setFreeLeft(Number.MAX_SAFE_INTEGER);
-        } else {
-          setFreeLeft(Math.max(0, DAILY_FREE - (data.usage ?? 0)));
+          setIsPremium(false);
         }
       } catch {
         setUserName(null);
