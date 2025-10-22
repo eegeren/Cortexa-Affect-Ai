@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import EmotionBars from "@/components/EmotionBars";
+import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Emotions = Record<string, number>;
 type HistoryItem = {
@@ -167,7 +168,6 @@ export default function Home() {
   const [isPremium, setIsPremium] = useState(false);
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const router = useRouter();
-  const pathname = usePathname();
   
   const { dominantEmotion, dominantValue, secondEmotion, secondValue } = useMemo(() => {
     if (!emotions) return { dominantEmotion: null, dominantValue: null, secondEmotion: null, secondValue: null };
