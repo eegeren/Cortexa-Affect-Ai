@@ -19,12 +19,22 @@ export default function ForgotPasswordPage() {
   const [sessionToken, setSessionToken] = useState<string | null>(null);
 
   const sanitizedEmail = useMemo(() => email.trim().toLowerCase(), [email]);
+  const isEmailValid = useMemo(() => {
+    if (!sanitizedEmail) return false;
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailPattern.test(sanitizedEmail);
+  }, [sanitizedEmail]);
 
   const handleRequest = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
     setError(null);
     setInfo(null);
+    if (!isEmailValid) {
+      setError("Enter a valid email address.");
+      setLoading(false);
+      return;
+    }
     try {
       const res = await fetch("/api/auth/forgot", {
         method: "POST",
@@ -159,11 +169,14 @@ export default function ForgotPasswordPage() {
               </div>
               <button
                 type="submit"
-                disabled={loading || !sessionToken}
-                className="w-full rounded-2xl border border-blue-500 bg-blue-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:border-slate-500 disabled:bg-slate-600"
+                disabled={loading || !isEmailValid}
+                className="w-full rounded-2xl border border-blue-500 bg-blue-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-600 disabled:border-slate-500 disabled:bg-slate-600 disabled:text-slate-200"
               >
                 {loading ? "Sending code..." : "Send reset code"}
               </button>
+              {!isEmailValid && email.length > 0 && (
+                <p className="text-xs text-red-300">Enter a valid email address to continue.</p>
+              )}
             </form>
           )}
 
