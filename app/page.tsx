@@ -188,6 +188,22 @@ export default function Home() {
 
   const remainingLabel = isPremium ? "Sınırsız analiz" : `Ücretsiz kalan: ${freeLeft}`;
 
+  const handleSidebarSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("Sidebar sign out failed", err);
+    } finally {
+      setUserName(null);
+      setUserEmail(null);
+      setIsPremium(false);
+      setFreeLeft(DAILY_FREE);
+      setEmotions(null);
+      window.dispatchEvent(new CustomEvent("cortexa-auth", { detail: null }));
+      router.push("/");
+    }
+  };
+
   return (
     <main className="flex min-h-screen bg-[#0d1016] text-slate-100">
       <aside className="hidden w-72 flex-col border-r border-white/5 bg-[#11141c] px-4 py-6 lg:flex">
@@ -269,12 +285,12 @@ export default function Home() {
             Premiuma geç
           </Link>
           {userEmail && (
-            <Link
-              href="/api/auth/logout?redirect=/"
+            <button
+              onClick={handleSidebarSignOut}
               className="inline-flex w-full items-center justify-center rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-200 transition hover:bg-white/10"
             >
               Çıkış yap
-            </Link>
+            </button>
           )}
         </div>
       </aside>
