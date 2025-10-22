@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import EmotionBars from "@/components/EmotionBars";
 
 type Emotions = Record<string, number>;
@@ -206,16 +207,24 @@ export default function Home() {
 
         <nav className="mt-6 flex-1 space-y-2 overflow-y-auto">
           <ul className="space-y-1">
-            {NAV_LINKS.map((item) => (
-              <li key={item.label}>
-                <Link
-                  href={item.href}
-                  className="block rounded-lg px-3 py-2 text-sm text-slate-400 transition hover:bg-white/5 hover:text-slate-200"
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
+            {NAV_LINKS.map((item) => {
+              const isHash = item.href.startsWith("#");
+              const isActive = isHash ? item.href === "#overview" : pathname === item.href;
+              return (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className={`block rounded-lg px-3 py-2 text-sm transition ${
+                      isActive
+                        ? "bg-blue-500/20 text-blue-200 border border-blue-500/40"
+                        : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
@@ -268,6 +277,34 @@ export default function Home() {
             </p>
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{remainingLabel}</p>
           </header>
+
+          <section className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+            <article className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-100 shadow">
+              <p className="text-xs uppercase tracking-[0.3em] text-blue-200/80">En baskın duygu</p>
+              <p className="mt-2 text-2xl font-semibold text-white">{(dominantEmotion ?? "Bekleniyor").toString()}</p>
+              <p className="text-xs text-blue-200/70">{dominantValue ? `${Math.round(dominantValue)}% yoğunluk` : "Analiz sonrası gösterilecek"}</p>
+            </article>
+            <article className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">İkincil duygu</p>
+              <p className="mt-2 text-2xl font-semibold text-white">{(secondEmotion ?? "Bekleniyor").toString()}</p>
+              <p className="text-xs text-slate-400">{secondValue ? `${Math.round(secondValue)}% eşlik ediyor` : "Analiz sonrası gösterilecek"}</p>
+            </article>
+            <article className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Analiz hakkı</p>
+              <p className="mt-2 text-2xl font-semibold text-white">{isPremium ? "Sınırsız" : freeLeft}</p>
+              <p className="text-xs text-slate-400">{isPremium ? "Premium hesabın sayesinde limit yok" : "Günlük ücretsiz hak"}</p>
+            </article>
+            <article className="rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-slate-200 md:col-span-2 lg:col-span-1">
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Hızlı aksiyon</p>
+              <p className="mt-2 text-xs text-slate-300">Metnini güçlendirmek için Premium planımızdaki ikna önerilerini dene.</p>
+              <Link
+                href="/upgrade"
+                className="mt-3 inline-flex w-full items-center justify-center rounded-xl bg-blue-500 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-blue-600"
+              >
+                Planları gör
+              </Link>
+            </article>
+          </section>
 
           <section className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30">
             <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
