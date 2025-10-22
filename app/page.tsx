@@ -14,6 +14,8 @@ type HistoryItem = {
   ts: number;
 };
 
+const DAILY_FREE = 3;
+
 const NAV_SECTIONS = [
   {
     title: "Get started",
@@ -51,7 +53,7 @@ export default function Home() {
   const [analysis, setAnalysis] = useState("");
   const [improvement, setImprovement] = useState("");
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [freeLeft, setFreeLeft] = useState(100);
+  const [freeLeft, setFreeLeft] = useState(DAILY_FREE);
   const [userName, setUserName] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
@@ -83,13 +85,11 @@ export default function Home() {
     const loadUser = async () => {
       try {
         const res = await fetch("/api/me", { cache: "no-store" });
-        if (!res.ok) {
-          setUserName(null);
-          setUserEmail(null);
-          return;
-        }
+        if (!res.ok) throw new Error("me");
         const data = (await res.json()) as {
           user: { name: string | null; email: string | null } | null;
+          usage?: number;
+          subscription?: { status: string | null } | null;
         };
         if (data.user) {
           setUserName(data.user.name ?? data.user.email ?? "Misafir");
@@ -98,9 +98,18 @@ export default function Home() {
           setUserName(null);
           setUserEmail(null);
         }
+        const status = data.subscription?.status?.toLowerCase() ?? "";
+        const premium = ["active", "trialing", "premium", "pro"].includes(status);
+        setIsPremium(premium);
+        if (premium) {
+          setFreeLeft(Number.MAX_SAFE_INTEGER);
+        } else {
+          setFreeLeft(Math.max(0, DAILY_FREE - (data.usage ?? 0)));
+        }
       } catch {
         setUserName(null);
         setUserEmail(null);
+        setIsPremium(false);
       }
     };
     loadUser();
@@ -141,7 +150,9 @@ export default function Home() {
           ...history,
         ].slice(0, 10)
       );
-      setFreeLeft(freeLeft - 1);
+      if (!isPremium) {
+        setFreeLeft((prev) => Math.max(0, prev - 1));
+      }
     } catch (err) {
       console.error(err);
       alert("Analyze error.");
@@ -173,6 +184,7 @@ export default function Home() {
 
   const displayName = userName ?? "Misafir";
   const displayEmail = userEmail ?? "Giriş yapmadın";
+  const [isPremium, setIsPremium] = useState(false);
   const avatarInitials = useMemo(() => {
     const source = userName ?? userEmail ?? "C";
     const parts = source.trim().split(/\s+/);
@@ -182,6 +194,8 @@ export default function Home() {
     return source.slice(0, 2).toUpperCase();
   }, [userName, userEmail]);
 
+  const remainingLabel = isPremium ? "Sınırsız analiz" : `Ücretsiz kalan: ${freeLeft}`;
+
   return (
     <main className="flex min-h-screen bg-[#0d1016] text-slate-100">
       <aside className="hidden w-72 flex-col border-r border-white/5 bg-[#11141c] px-4 py-6 lg:flex">
@@ -190,11 +204,19 @@ export default function Home() {
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-sm font-bold text-white">
               {avatarInitials}
             </div>
-            <div className="space-y-1">
+            <div>
               <p className="text-sm font-semibold text-white">{displayName}</p>
               <p className="text-xs text-slate-400">{displayEmail}</p>
             </div>
           </div>
+          {userEmail && (
+            <Link
+              href="/api/auth/logout?redirect=/"
+              className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-200 transition hover:bg-white/20"
+            >
+              Çıkış yap
+            </Link>
+          )}
           <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-400">
             Beta
           </span>
@@ -239,7 +261,7 @@ export default function Home() {
         <div className="space-y-3 rounded-2xl border border-white/10 bg-[#0c1018] px-4 py-4 text-sm text-slate-300">
           <p>
             Ücretsiz kalan:{" "}
-            <span className="font-semibold text-white">{freeLeft}</span>
+            <span className="font-semibold text-white">{isPremium ? "∞" : freeLeft}</span>
           </p>
           {!userEmail && (
             <div className="space-y-2">
@@ -275,6 +297,7 @@ export default function Home() {
             <p className="text-sm text-slate-400">
               Metnini yapıştır, tek tıkla duygu dağılımını, özet ve ikna önerisini al.
             </p>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{remainingLabel}</p>
           </header>
 
           <section className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30">
