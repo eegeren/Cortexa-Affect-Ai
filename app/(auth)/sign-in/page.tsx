@@ -105,7 +105,7 @@ export default function SignInPage() {
               <label className="inline-flex items-center gap-2 font-medium text-slate-500">
                 <input type="checkbox" className="h-4 w-4 rounded border-blue-200 text-blue-600 focus:ring-blue-400" /> Remember me
               </label>
-              <Link href="#" className="font-semibold uppercase tracking-[0.3em] text-blue-500 underline underline-offset-4 hover:text-blue-700">
+              <Link href="/forgot-password" className="font-semibold uppercase tracking-[0.3em] text-blue-500 underline underline-offset-4 hover:text-blue-700">
                 Forgot password
               </Link>
             </div>

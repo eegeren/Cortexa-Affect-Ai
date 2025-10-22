@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type AuthMode = "password" | "magic";
@@ -24,6 +24,16 @@ export default function LoginPage() {
       window.dispatchEvent(new CustomEvent("cortexa-auth", { detail }));
     }
   };
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("reset") === "success") {
+      setStatus("Password reset successfully. Please sign in.");
+    }
+  }, []);
 
   const handlePasswordLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -267,6 +277,15 @@ export default function LoginPage() {
                 className="font-semibold text-blue-400 underline underline-offset-4 hover:text-blue-300"
               >
                 Create an account.
+              </Link>
+            </p>
+            <p className="mt-2 text-center text-xs text-blue-300">
+              Forgot your password?{" "}
+              <Link
+                href="/forgot-password"
+                className="font-semibold text-blue-200 underline underline-offset-4 hover:text-blue-100"
+              >
+                Reset it here.
               </Link>
             </p>
 
