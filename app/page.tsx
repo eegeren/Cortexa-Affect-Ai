@@ -319,59 +319,63 @@ export default function Home() {
             </article>
           </section>
 
-          <section className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30 space-y-6">
-            <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-              Ad text
-            </label>
-            <textarea
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-              placeholder="Örnek: Yeni finans uygulamamızla bütçeni üç dokunuşla yönet..."
-              className="mt-3 h-40 w-full rounded-2xl border border-white/10 bg-[#0b0e13] p-4 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-            />
+          <section className="grid gap-6 lg:grid-cols-[3fr,2fr]">
+            <div className="rounded-3xl border border-white/10 bg-[#0f131a] p-6 shadow-lg shadow-black/40 space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                  Ad text
+                </label>
+                <textarea
+                  value={text}
+                  onChange={(event) => setText(event.target.value)}
+                  placeholder="Örnek: Yeni finans uygulamamızla bütçeni üç dokunuşla yönet..."
+                  className="h-48 w-full rounded-xl border border-white/10 bg-[#080c12] p-4 text-sm text-slate-100 placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                />
+              </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <button
-                onClick={analyze}
-                disabled={loading || !text.trim()}
-                className="rounded-xl bg-blue-500 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-blue-600 disabled:bg-slate-600"
-              >
-                {loading ? "Analyzing..." : "Analyze Emotion"}
-              </button>
-              {emotions && (
+              <div className="flex flex-wrap items-center gap-3">
                 <button
-                  onClick={copyReport}
-                  className="rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-100 hover:bg-white/10"
+                  onClick={analyze}
+                  disabled={loading || !text.trim()}
+                  className="rounded-xl bg-blue-500 px-6 py-3 text-sm font-semibold text-white shadow hover:bg-blue-600 disabled:bg-slate-600"
                 >
-                  Copy report
+                  {loading ? "Analyzing..." : "Analyze Emotion"}
                 </button>
+                {emotions && (
+                  <button
+                    onClick={copyReport}
+                    className="rounded-xl border border-white/10 px-4 py-3 text-sm font-semibold text-slate-100 hover:bg-white/10"
+                  >
+                    Copy report
+                  </button>
+                )}
+              </div>
+
+              {(analysis || improvement || summary) && (
+                <div className="space-y-3 rounded-2xl border border-white/10 bg-[#0c0f15] p-4 text-sm text-slate-200">
+                  {analysis && <p>{analysis}</p>}
+                  {improvement && (
+                    <p className="font-semibold text-blue-300">{improvement}</p>
+                  )}
+                  {!analysis && !improvement && summary && <p>{summary}</p>}
+                </div>
               )}
             </div>
 
-            {(analysis || improvement || summary) && (
-              <div className="mt-6 space-y-3 rounded-2xl border border-white/10 bg-[#0c0f15] p-4 text-sm text-slate-200">
-                {analysis && <p>{analysis}</p>}
-                {improvement && (
-                  <p className="font-semibold text-blue-300">{improvement}</p>
-                )}
-                {!analysis && !improvement && summary && <p>{summary}</p>}
+            <aside className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30 space-y-4 text-sm text-slate-300">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+                Yazım ipuçları
+              </h2>
+              <p>
+                1. Metnin hedef kitlesinin duygusunu tetikleyen bir açılış cümlesi kullan. <br />
+                2. Benzersiz faydayı net bir cümlede anlat. <br />
+                3. Güven veren bir sosyal kanıt veya veri ekle. <br />
+                4. Net bir çağrı ve zamanlama sun.
+              </p>
+              <div className="rounded-2xl border border-white/10 bg-[#0b0f16] px-4 py-3 text-xs text-slate-400">
+                "+" işaretiyle farklı duygulara yönelik varyasyonlarını da dene; Premium plan bunları kaydedip karşılaştırmana yardımcı olur.
               </div>
-            )}
-
-            {emotions && (
-              <div className="mt-6 rounded-xl border border-white/10 bg-[#0c1018] p-4">
-                <EmotionBars data={emotions} />
-              </div>
-            )}
-
-            {emotions && (
-              <details className="mt-6 text-xs text-slate-500">
-                <summary className="cursor-pointer">Raw JSON</summary>
-                <pre className="mt-2 max-h-60 overflow-auto rounded border border-white/10 bg-[#0a0d12] p-3 text-[11px] text-slate-300">
-                  {JSON.stringify(emotions, null, 2)}
-                </pre>
-              </details>
-            )}
+            </aside>
           </section>
 
           <section className="rounded-3xl border border-white/10 bg-[#11141c] p-6 shadow-lg shadow-black/30">
