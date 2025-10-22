@@ -199,7 +199,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen bg-[#0d1016] text-slate-100">
       <aside className="hidden w-72 flex-col border-r border-white/5 bg-[#11141c] px-4 py-6 lg:flex">
-        <div className="flex items-center justify-between">
+        <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500 text-sm font-bold text-white">
               {avatarInitials}
@@ -209,17 +209,19 @@ export default function Home() {
               <p className="text-xs text-slate-400">{displayEmail}</p>
             </div>
           </div>
-          {userEmail && (
-            <Link
-              href="/api/auth/logout?redirect=/"
-              className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-200 transition hover:bg-white/20"
-            >
-              Çıkış yap
-            </Link>
-          )}
-          <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-400">
-            Beta
-          </span>
+          <div className="flex flex-col items-end gap-2">
+            <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-400">
+              Beta
+            </span>
+            {userEmail && (
+              <Link
+                href="/api/auth/logout?redirect=/"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-100 transition hover:bg-white/20"
+              >
+                <span>Çıkış yap</span>
+              </Link>
+            )}
+          </div>
         </div>
 
         <div className="mt-6">
