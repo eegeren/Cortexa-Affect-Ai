@@ -213,14 +213,6 @@ export default function Home() {
             <span className="rounded-full border border-white/10 px-2 py-1 text-[10px] uppercase tracking-[0.25em] text-slate-400">
               Beta
             </span>
-            {userEmail && (
-              <Link
-                href="/api/auth/logout?redirect=/"
-                className="inline-flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-100 transition hover:bg-white/20"
-              >
-                <span>Çıkış yap</span>
-              </Link>
-            )}
           </div>
         </div>
 
@@ -287,6 +279,14 @@ export default function Home() {
           >
             Premiuma geç
           </Link>
+          {userEmail && (
+            <Link
+              href="/api/auth/logout?redirect=/"
+              className="inline-flex w-full items-center justify-center rounded-xl border border-white/20 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-200 transition hover:bg-white/10"
+            >
+              Çıkış yap
+            </Link>
+          )}
         </div>
       </aside>
 
