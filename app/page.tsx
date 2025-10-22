@@ -291,7 +291,7 @@ export default function Home() {
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{remainingLabel}</p>
           </header>
 
-          <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
             <article className="rounded-3xl border border-blue-500/30 bg-blue-500/10 p-4 text-sm text-blue-100 shadow">
               <p className="text-xs uppercase tracking-[0.3em] text-blue-200/80">En baskın duygu</p>
               <p className="mt-2 text-2xl font-semibold text-white">{(dominantEmotion ?? "Bekleniyor").toString()}</p>
