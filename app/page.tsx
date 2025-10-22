@@ -165,6 +165,9 @@ export default function Home() {
   const displayName = userName ?? "Misafir";
   const displayEmail = userEmail ?? "Giriş yapmadın";
   const [isPremium, setIsPremium] = useState(false);
+  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
+  const router = useRouter();
+  const pathname = usePathname();
   
   const { dominantEmotion, dominantValue, secondEmotion, secondValue } = useMemo(() => {
     if (!emotions) return { dominantEmotion: null, dominantValue: null, secondEmotion: null, secondValue: null };
