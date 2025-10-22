@@ -16,33 +16,11 @@ type HistoryItem = {
 
 const DAILY_FREE = 3;
 
-const NAV_SECTIONS = [
-  {
-    title: "Get started",
-    items: [
-      { label: "Overview", href: "#overview", active: true },
-      { label: "Quickstart", href: "#quickstart" },
-      { label: "Pricing", href: "/upgrade" },
-      { label: "Libraries", href: "#libraries" },
-    ],
-  },
-  {
-    title: "Core concepts",
-    items: [
-      { label: "Text generation", href: "#text-gen" },
-      { label: "Audio & speech", href: "#audio" },
-      { label: "Structured output", href: "#structured" },
-      { label: "Function calling", href: "#functions" },
-    ],
-  },
-  {
-    title: "Agents",
-    items: [
-      { label: "Overview", href: "#agents" },
-      { label: "Build agents", href: "#build" },
-      { label: "Deploy", href: "#deploy" },
-    ],
-  },
+const NAV_LINKS = [
+  { label: "Anasayfa", href: "#overview" },
+  { label: "Analiz geçmişi", href: "#recent" },
+  { label: "Profil", href: "/profile" },
+  { label: "Premium plan", href: "/upgrade" },
 ];
 
 export default function Home() {
@@ -226,30 +204,19 @@ export default function Home() {
           </div>
         </div>
 
-        <nav className="mt-6 flex-1 space-y-6 overflow-y-auto">
-          {NAV_SECTIONS.map((section) => (
-            <div key={section.title}>
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
-                {section.title}
-              </p>
-              <ul className="mt-2 space-y-1">
-                {section.items.map((item) => (
-                  <li key={item.label}>
-                    <Link
-                      href={item.href}
-                      className={`block rounded-lg px-3 py-2 text-sm transition ${
-                        item.active
-                          ? "bg-white/10 text-white"
-                          : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        <nav className="mt-6 flex-1 space-y-2 overflow-y-auto">
+          <ul className="space-y-1">
+            {NAV_LINKS.map((item) => (
+              <li key={item.label}>
+                <Link
+                  href={item.href}
+                  className="block rounded-lg px-3 py-2 text-sm text-slate-400 transition hover:bg-white/5 hover:text-slate-200"
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </nav>
 
         <div className="space-y-3 rounded-2xl border border-white/10 bg-[#0c1018] px-4 py-4 text-sm text-slate-300">
